@@ -4,6 +4,9 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Config(name = "spatial-gui")
 public class SpatialGUIConfig implements ConfigData {
     // general
@@ -39,6 +42,10 @@ public class SpatialGUIConfig implements ConfigData {
     @ConfigEntry.Category("general")
     @ConfigEntry.Gui.Tooltip
     public boolean hideHotbar = false;
+
+    @ConfigEntry.Category("general")
+    @ConfigEntry.Gui.Tooltip
+    public boolean hideHud = false;
 
     @ConfigEntry.Category("general")
     @ConfigEntry.Gui.CollapsibleObject
@@ -108,7 +115,11 @@ public class SpatialGUIConfig implements ConfigData {
     // screens
     @ConfigEntry.Category("screens")
     @ConfigEntry.Gui.Tooltip
-    public boolean allScreens = false;
+    public boolean inventory = true;
+
+    @ConfigEntry.Category("screens")
+    @ConfigEntry.Gui.Tooltip
+    public boolean containers = true;
 
     @ConfigEntry.Category("screens")
     @ConfigEntry.Gui.Tooltip
@@ -116,87 +127,37 @@ public class SpatialGUIConfig implements ConfigData {
 
     @ConfigEntry.Category("screens")
     @ConfigEntry.Gui.Tooltip
-    public boolean mostContainers = true;
+    public boolean allScreens = false;
 
     @ConfigEntry.Category("screens")
     @ConfigEntry.Gui.Tooltip
-    public boolean books = true;
+    public List<String> seenScreens = new ArrayList<>();
 
     @ConfigEntry.Category("screens")
     @ConfigEntry.Gui.Tooltip
-    public boolean crafting = true;
+    public List<String> enabledScreens = defaultEnabledScreens();
 
     @ConfigEntry.Category("screens")
     @ConfigEntry.Gui.Tooltip
-    public boolean furnaces = true;
+    public List<String> disabledScreens = new ArrayList<>();
 
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean anvils = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean enchanting = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean beacons = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean brewing = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean villagerTrading = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean chests = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean shulkerBoxes = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean hoppers = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean dispensers = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean grindstone = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean smithing = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean cartography = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean loom = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean stonecutter = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean lectern = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean inventory = true;
-
-    @ConfigEntry.Category("screens")
-    @ConfigEntry.Gui.Tooltip
-    public boolean creativeInventory = true;
+    private static List<String> defaultEnabledScreens() {
+        String pkg = "net.minecraft.client.gui.screens.inventory.";
+        List<String> list = new ArrayList<>();
+        for (String name : new String[] {
+                "BookViewScreen", "BookEditScreen", "BookSignScreen",
+                "CraftingScreen",
+                "FurnaceScreen", "SmokerScreen", "BlastFurnaceScreen",
+                "AnvilScreen", "EnchantmentScreen", "BeaconScreen", "BrewingStandScreen",
+                "MerchantScreen", "ContainerScreen", "ShulkerBoxScreen", "HopperScreen",
+                "DispenserScreen", "GrindstoneScreen", "SmithingScreen", "CartographyTableScreen",
+                "LoomScreen", "StonecutterScreen", "LecternScreen",
+                "InventoryScreen", "CreativeModeInventoryScreen"
+        }) {
+            list.add(pkg + name);
+        }
+        return list;
+    }
 
     // rendering
     @ConfigEntry.Category("rendering")
@@ -353,6 +314,10 @@ public class SpatialGUIConfig implements ConfigData {
     @ConfigEntry.Category("thirdPersonCamera")
     @ConfigEntry.Gui.Tooltip
     public boolean lerpXRot = false;
+
+    @ConfigEntry.Category("thirdPersonCamera")
+    @ConfigEntry.Gui.Tooltip
+    public boolean fallbackToFirstPersonOnBlockCollision = false;
 
     // firstPersonCamera
     @ConfigEntry.Category("firstPersonCamera")

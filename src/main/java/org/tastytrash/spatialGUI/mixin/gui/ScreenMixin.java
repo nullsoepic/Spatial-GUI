@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 //?}
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -17,28 +18,28 @@ public class ScreenMixin {
     //? if >=26.1.2 {
     @Inject(method = "extractBackground", at = @At("HEAD"), cancellable = true)
     private void spatialGUI$removeBackground(CallbackInfo ci) {
-        if (SpatialGUIClient.renderer() != null && SpatialGUIClient.renderer().shouldCapture() && SpatialGUIClient.isEnabled()) {
+        if (spatialGUI$isHooked()) {
             ci.cancel();
         }
     }
 
     @Inject(method = "extractTransparentBackground", at = @At("HEAD"), cancellable = true)
     private void spatialGUI$removeTransparentBackground(CallbackInfo ci) {
-        if (SpatialGUIClient.renderer() != null && SpatialGUIClient.renderer().shouldCapture() && SpatialGUIClient.isEnabled()) {
+        if (spatialGUI$isHooked()) {
             ci.cancel();
         }
     }
 
     @Inject(method = "extractBlurredBackground", at = @At("HEAD"), cancellable = true)
     private void spatialGUI$removeBlur(GuiGraphicsExtractor graphics, CallbackInfo ci) {
-        if (SpatialGUIClient.renderer().shouldCapture() && SpatialGUIClient.isEnabled() && SpatialGUI.config.allScreens) {
+        if (spatialGUI$isHooked()) {
             ci.cancel();
         }
     }
 
     @Inject(method = "extractMenuBackground", at = @At("HEAD"), cancellable = true)
     private void spatialGUI$removeMenuBackground(GuiGraphicsExtractor graphics, CallbackInfo ci) {
-        if (SpatialGUIClient.renderer().shouldCapture() && SpatialGUIClient.isEnabled() && SpatialGUI.config.allScreens) {
+        if (spatialGUI$isHooked()) {
             ci.cancel();
         }
     }
@@ -72,4 +73,13 @@ public class ScreenMixin {
         }
     }
     *///?}
+
+    @Unique
+    private boolean spatialGUI$isHooked() {
+        var renderer = SpatialGUIClient.renderer();
+        return renderer != null
+                && SpatialGUIClient.isEnabled()
+                && renderer.getHookedScreen() == (Object) this
+                && renderer.shouldCapture();
+    }
 }

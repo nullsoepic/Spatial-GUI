@@ -120,6 +120,7 @@ public class SpatialGUIRenderer {
     private void onScreenRemoved() {
         skipWindowOverride = false;
         var player = Minecraft.getInstance().player;
+        boolean wasEffectiveFirstPerson = SpatialGUIClient.getEffectiveFirstPersonMode();
         MouseHandlerUtil.releaseMouseFromFirstPerson();
         inventoryRenderer.resetRecipeBookState();
         inventoryRenderer.resetPerspectiveState();
@@ -128,7 +129,7 @@ public class SpatialGUIRenderer {
         headLockInitialized = false;
         SpatialGUIClient.setSwitchedToFirstPersonDueToBlock(false);
 
-        if (SpatialGUIClient.getEffectiveFirstPersonMode() && SpatialGUI.config.keepFirstPersonCameraAngle) {
+        if (wasEffectiveFirstPerson && SpatialGUI.config.keepFirstPersonCameraAngle) {
             var mc = Minecraft.getInstance();
             //? if >=26.2 {
             /*float cameraYaw = mc.gameRenderer.getMainCamera().yRot();
@@ -147,6 +148,8 @@ public class SpatialGUIRenderer {
             } else if (player != null) {
                 applyCameraSnap(player, cameraYaw, cameraPitch);
             }
+        } else {
+            pendingCameraSnap = false;
         }
     }
 
@@ -191,6 +194,7 @@ public class SpatialGUIRenderer {
         //?}
         if (!bool) {
             wasTrue = false;
+            cameraStartPos = null;
             applyPendingCameraSnap();
             return false;
         }

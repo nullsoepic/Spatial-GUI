@@ -11,6 +11,7 @@
     "client.OptionsMixin",
     "compat.DynamicCrosshairMixin",
     "compat.EMIScreenManagerMixin",
+    "gui.DebugScreenOverlayMixin",
     "gui.GuiMixin",
     "gui.GuiRendererAccessor",
     "gui.GuiRendererMixin",

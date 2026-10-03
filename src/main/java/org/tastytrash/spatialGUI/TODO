@@ -29,6 +29,10 @@ Minecraft's water effects not applying properly when in the menu with velocity u
 __________ SUGGESTIONS/FEATURES _________________
 ================================================
 
+#58 Screen closing animation
+
+#56 Dynamic mode switching based on third vs first person
+
 #52 - Remove the 180 degree first person limit, make it a config, off by default
 
 #38 - Move or mirror third person camera to avoid blocks so first person doesnt activate as often
