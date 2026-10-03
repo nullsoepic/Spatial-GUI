@@ -9,7 +9,7 @@ import org.tastytrash.spatialGUI.render.SpatialGUIRenderer;
 /**
  * BlurProgram binds a new framebuffer and never restores the old one, so
  * during a capture everything drawn after a blurred surface ends up outside
- * our texture, so we cancel it while capturing (for owo vers prior to 1.21.11)
+ * our texture, so it's cancelled while capturing (for owo vers prior to 1.21.11)
  */
 @Mixin(targets = "io.wispforest.owo.shader.BlurProgram", remap = false)
 public class OwoBlurMixin {

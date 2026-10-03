@@ -9,12 +9,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.tastytrash.spatialGUI.render.SpatialGUIRenderer;
 
 /**
- * Mods rendering custom effects inside GUI screens sometimes rebind the main
- * framebuffer mid-render (e.g. Accessories' hover-highlight PostEffectBuffer).
- * While we are capturing a screen into our isolated target, such a rebind
- * hijacks every draw issued after it, sending parts of the screen to the main
- * framebuffer in 2D. Block main-target binds during the capture window; our
- * extractor restores the main target itself once the capture is finished.
+ * Some mods rebind the main framebuffer mid-gui-render (e.g. Accessories'
+ * hover-highlight PostEffectBuffer), which would hijack the rest of our
+ * capture into 2D. Main-target binds are blocked for the duration, the
+ * extractor rebinds it itself once the capture is done
  */
 @Mixin(RenderTarget.class)
 public abstract class RenderTargetMixin {
