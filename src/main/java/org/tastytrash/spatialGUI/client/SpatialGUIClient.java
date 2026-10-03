@@ -1,7 +1,13 @@
 package org.tastytrash.spatialGUI.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
+import net.minecraft.client.gui.screens.TitleScreen;
+//? if <=1.21.1 {
+/*import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+*///?}
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.*;
 import org.tastytrash.spatialGUI.compat.VisorCompat;
@@ -70,10 +76,12 @@ public class SpatialGUIClient {
 
     public static boolean shouldHookScreen(Screen screen) {
         if (screen == null) return false;
-        if (screen.getClass().getName().contains("TitleScreen")) return false;
-        if (screen.getClass().getName().contains("ReceivingLevelScreen")) return false;
-        if (screen.getClass().getName().contains("LevelLoadingScreen")) return false;
-        if (screen.getClass().getName().contains("ChatScreen")) return false;
+        if (screen instanceof TitleScreen) return false;
+        //? if <=1.21.1 {
+        /*if (screen instanceof ReceivingLevelScreen) return false;
+        *///?}
+        if (screen instanceof LevelLoadingScreen) return false;
+        if (screen instanceof ChatScreen) return false;
         if (SpatialGUI.config.allScreens && Minecraft.getInstance().level != null) return true;
         //? if >1.21.1 {
         if (screen instanceof BookViewScreen || screen instanceof BookEditScreen || screen instanceof BookSignScreen) return SpatialGUI.config.books;
