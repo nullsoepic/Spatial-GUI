@@ -205,16 +205,27 @@ public class MouseHandlerMixin {
     }
 
     @Unique
+    private static Screen spatialGUI$currentScreen(Minecraft spatialGUI$mc) {
+        //? if >=26.2 {
+        /*return spatialGUI$mc.gui.screen();
+         *///?} else {
+        return spatialGUI$mc.screen;
+        //?}
+    }
+
+    @Unique
     private double spatialGUI$warpArgX(double original) {
         Minecraft spatialGUI$mc = Minecraft.getInstance();
-        if (spatialGUI$crosshairIncoming() || spatialGUI$mc.screen == null || !SpatialGUIClient.shouldHookScreen(spatialGUI$mc.screen)) return original;
+        Screen spatialGUI$screen = spatialGUI$currentScreen(spatialGUI$mc);
+        if (spatialGUI$crosshairIncoming() || spatialGUI$screen == null || !SpatialGUIClient.shouldHookScreen(spatialGUI$screen)) return original;
         return spatialGUI$preReleaseX;
     }
 
     @Unique
     private double spatialGUI$warpArgY(double original) {
         Minecraft spatialGUI$mc = Minecraft.getInstance();
-        if (spatialGUI$crosshairIncoming() || spatialGUI$mc.screen == null || !SpatialGUIClient.shouldHookScreen(spatialGUI$mc.screen)) return original;
+        Screen spatialGUI$screen = spatialGUI$currentScreen(spatialGUI$mc);
+        if (spatialGUI$crosshairIncoming() || spatialGUI$screen == null || !SpatialGUIClient.shouldHookScreen(spatialGUI$screen)) return original;
         return spatialGUI$preReleaseY;
     }
 
@@ -255,7 +266,8 @@ public class MouseHandlerMixin {
     @Inject(method = "releaseMouse", at = @At("TAIL"))
     private void spatialGUI$restoreCursorFields(CallbackInfo ci) {
         Minecraft spatialGUI$mc = Minecraft.getInstance();
-        if (spatialGUI$crosshairIncoming() || spatialGUI$mc.screen == null || !SpatialGUIClient.shouldHookScreen(spatialGUI$mc.screen)) return;
+        Screen spatialGUI$screen = spatialGUI$currentScreen(spatialGUI$mc);
+        if (spatialGUI$crosshairIncoming() || spatialGUI$screen == null || !SpatialGUIClient.shouldHookScreen(spatialGUI$screen)) return;
         var spatialGUI$acc = (MouseHandlerAccessor) (Object) this;
         spatialGUI$acc.setRawXpos(spatialGUI$preReleaseX);
         spatialGUI$acc.setRawYpos(spatialGUI$preReleaseY);
