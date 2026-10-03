@@ -61,14 +61,19 @@ public class SpatialGUIRenderer {
             return;
         }
 
+        var client = Minecraft.getInstance();
+        //? if >=26.2 {
+        /*if (screen != client.gui.screen()) return;
+         *///?} else {
+        if (screen != client.screen) return;
+        //?}
+
         pendingCameraSnap = false;
 
         skipWindowOverride = false;
         hookedScreen = screen;
         isInventoryScreen = screen instanceof InventoryScreen || screen.getClass().getName().contains("InventoryScreen");
         inventoryRenderer.setScreenOpenTime(System.currentTimeMillis());
-
-        var client = Minecraft.getInstance();
 
         var player = client.player;
         if (player != null && Minecraft.getInstance().level != null) {
