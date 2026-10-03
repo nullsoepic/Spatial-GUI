@@ -29,7 +29,8 @@
     "render.GameRendererInvoker",
     "render.GameRendererMixin",
     "render.HandRendererMixin",
-    "render.LevelRendererMixin"
+    "render.LevelRendererMixin",
+    "render.RenderTargetMixin"
   ],
   "injectors": {
     "defaultRequire": 1
