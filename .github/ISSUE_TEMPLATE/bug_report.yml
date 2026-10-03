@@ -1,0 +1,81 @@
+name: Bug report
+description: Something is broken or behaving incorrectly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+        Please fill out the required details. Reports missing required info may be closed.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what's wrong. What did you expect to happen instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce this? Include all relevant details.
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. ...
+    validations:
+      required: true
+
+  - type: input
+    id: mod-version
+    attributes:
+      label: Spatial GUI version
+    validations:
+      required: true
+
+  - type: input
+    id: mc-version
+    attributes:
+      label: Minecraft version
+    validations:
+      required: true
+
+  - type: input
+    id: loader-version
+    attributes:
+      label: Mod loader and version
+      description: e.g. Fabric Loader 0.19.5 or NeoForge 26.3.0.45-beta
+    validations:
+      required: true
+
+  - type: dropdown
+    id: perspective
+    attributes:
+      label: Camera perspective
+      description: Many rendering issues only occur in one perspective.
+      options:
+        - First person
+        - Third person
+        - Both
+    validations:
+      required: false
+
+  - type: input
+    id: logs
+    attributes:
+      label: Latest log
+      description: Upload your log (or crash report) to https://mclo.gs and paste the link here.
+      placeholder: Optional
+    validations:
+      required: false
+
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other mods installed
+      description: A list of the rest of your mods, if relevant. You can skip this if you provided a log.
+      placeholder: Optional
+    validations:
+      required: false
