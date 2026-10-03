@@ -118,7 +118,6 @@ public class SpatialGUIRenderer {
         MouseHandlerUtil.releaseMouseFromFirstPerson();
         inventoryRenderer.resetRecipeBookState();
         inventoryRenderer.resetPerspectiveState();
-        MouseHandlerUtil.resetMouseCache();
         hookedScreen = null;
         isInventoryScreen = false;
         headLockInitialized = false;
