@@ -151,7 +151,10 @@ public abstract class CameraMixin {
                 *///?}
                 double yOffset = deltaY * sens * (client.options.invertMouseY().get() ? -1 : 1);
 
-                freeLookYaw = Math.max(-MAX_YAW_OFFSET, Math.min(MAX_YAW_OFFSET, freeLookYaw + (float) xOffset));
+                freeLookYaw += (float) xOffset;
+                if (SpatialGUI.config.lockFirstPersonYaw) {
+                    freeLookYaw = Math.max(-MAX_YAW_OFFSET, Math.min(MAX_YAW_OFFSET, freeLookYaw));
+                }
                 freeLookPitch = Math.max(-maxPitch - entityXRot, Math.min(maxPitch - entityXRot, freeLookPitch + (float) yOffset));
 
                 smoothedCameraYaw = freeLookYaw;
