@@ -54,6 +54,7 @@ public class WindowMixin {
     private static boolean shouldOverride() {
         if (!SpatialGUIClient.isEnabled() || SpatialGUIRenderer.skipWindowOverride) return false;
         Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) return false;
         if (mc.gui == null) return false;
         //? if >=26.2 {
         /*Screen screen = mc.gui.screen();

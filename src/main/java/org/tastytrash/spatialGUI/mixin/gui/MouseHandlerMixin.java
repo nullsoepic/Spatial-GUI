@@ -30,6 +30,7 @@ public class MouseHandlerMixin {
     private static boolean shouldApplyMouseOverride() {
         if (!SpatialGUIClient.isEnabled()) return false;
         Minecraft client = Minecraft.getInstance();
+        if (client.level == null) return false;
         //? if >=26.2 {
         /*Screen screen = client.screen;
          *///?} else {
