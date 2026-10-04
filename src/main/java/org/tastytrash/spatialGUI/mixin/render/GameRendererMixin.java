@@ -254,7 +254,7 @@ public abstract class GameRendererMixin {
     /*@Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/render/GuiRenderer;render()V"))
      *///?} else {
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/render/GuiRenderer;render(Lcom/mojang/blaze3d/buffers/GpuBufferSlice;)V"))
-            //?}
+    //?}
     private void spatialGUI$beforeGuiRender(CallbackInfo ci) {
         var renderer = SpatialGUIClient.renderer();
 
@@ -291,7 +291,11 @@ public abstract class GameRendererMixin {
         }
     }
 
+    //? if >=26.3 {
+    /*@Inject(method = "extract", at = @At("HEAD"))
+    *///?} else {
     @Inject(method = "extractGui", at = @At("HEAD"))
+    //?}
     private void spatialGUI$refreshMousePosition(CallbackInfo ci) {
         var renderer = SpatialGUIClient.renderer();
         if (renderer != null) {

@@ -31,8 +31,15 @@ public class HudMixin {
     }
 
     //? if >=26.1.2 {
+    //? if neoforge {
+    /*@Inject(method = {"extractHotbar", "extractHealthLevel", "extractVehicleHealth",
+            "extractContextualInfoBarBackground", "extractExperienceLevel", "extractContextualInfoBar",
+            "maybeExtractSelectedItemName", "maybeExtractSpectatorTooltip", "extractEffects", "extractBossOverlay"},
+            at = @At("HEAD"), cancellable = true)
+    *///?} else {
     @Inject(method = {"extractHotbarAndDecorations", "extractEffects", "extractBossOverlay"},
-    at = @At("HEAD"), cancellable = true)
+            at = @At("HEAD"), cancellable = true)
+    //?}
     //?} else if >1.21.1 {
     /*@Inject(method = {"renderHotbarAndDecorations", "renderEffects", "renderBossOverlay"},
             at = @At("HEAD"), cancellable = true)
@@ -55,6 +62,16 @@ public class HudMixin {
     }
 
     //? if >=26.1.2 {
+    //? if neoforge {
+    /*@Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
+    private void spatialGUI$hideHud(CallbackInfo ci) {
+        if (SpatialGUIClient.isEnabled() && SpatialGUI.config.hideHud
+                && SpatialGUIClient.renderer() != null
+                && SpatialGUIClient.renderer().getHookedScreen() != null) {
+            ci.cancel();
+        }
+    }
+    *///?} else {
     @ModifyExpressionValue(method = "extractRenderState", at = @At(value = "FIELD",
     //? if >=26.2 {
     /*target = "Lnet/minecraft/client/gui/Hud;isHidden:Z"))
@@ -67,6 +84,7 @@ public class HudMixin {
                 && SpatialGUIClient.renderer() != null
                 && SpatialGUIClient.renderer().getHookedScreen() != null;
     }
+    //?}
     //?} else if >1.21.1 {
     /*@ModifyExpressionValue(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Options;hideGui:Z"))
     private boolean spatialGUI$hideHud(boolean original) {

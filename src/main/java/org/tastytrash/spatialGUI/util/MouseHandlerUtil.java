@@ -8,10 +8,12 @@ import org.tastytrash.spatialGUI.mixin.gui.MouseHandlerAccessor;
 import org.tastytrash.spatialGUI.render.SpatialGUIRenderer;
 import org.tastytrash.spatialGUI.util.RenderUtil.QuadBasis;
 import org.tastytrash.spatialGUI.util.RenderUtil.CylinderBasis;
+//? if <26.3 {
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.DoubleBuffer;
+//?}
 
 public class MouseHandlerUtil {
     private static boolean weGrabbedMouse = false;
@@ -38,6 +40,11 @@ public class MouseHandlerUtil {
             physicalX = mc.getWindow().getScreenWidth() / 2.0;
             physicalY = mc.getWindow().getScreenHeight() / 2.0;
         } else {
+            //? if >=26.3 {
+            /*mc.mouseHandler.resyncMousePosition();
+            physicalX = ((MouseHandlerAccessor) mc.mouseHandler).getRawXpos();
+            physicalY = ((MouseHandlerAccessor) mc.mouseHandler).getRawYpos();
+            *///?} else {
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 DoubleBuffer x = stack.mallocDouble(1);
                 DoubleBuffer y = stack.mallocDouble(1);
@@ -45,6 +52,7 @@ public class MouseHandlerUtil {
                 physicalX = x.get(0);
                 physicalY = y.get(0);
             }
+            //?}
         }
     }
 

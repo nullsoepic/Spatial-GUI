@@ -14,9 +14,9 @@ import org.tastytrash.spatialGUI.render.SpatialGUIRenderer;
 @Mixin(targets = "io.wispforest.owo.shader.BlurProgram", remap = false)
 public class OwoBlurMixin {
     //? if <1.21.11 {
-    @Inject(method = "use", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
+    /*@Inject(method = "use", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
     private void spatialGUI$cancelDuringCapture(CallbackInfo ci) {
         if (SpatialGUIRenderer.isExtractingScreen) ci.cancel();
     }
-    //?}
+    *///?}
 }

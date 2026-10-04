@@ -45,8 +45,13 @@ public class MouseHandlerMixin {
         return shouldApplyMouseOverride() ? MouseHandlerUtil.getLastPos(false, original) : original;
     }
 
+    //? if >=26.3 {
+    /*@Inject(method = "onMove", at = @At("HEAD"), cancellable = true)
+    private void spatialGUI$onMove(long handle, double x, double y, double xrel, double yrel, CallbackInfo ci) {
+    *///?} else {
     @Inject(method = "onMove(JDD)V", at = @At("HEAD"), cancellable = true)
     private void spatialGUI$onMove(long handle, double x, double y, CallbackInfo ci) {
+    //?}
         Minecraft mc = Minecraft.getInstance();
         if (handle != mc.getWindow().handle()) {
             ci.cancel();

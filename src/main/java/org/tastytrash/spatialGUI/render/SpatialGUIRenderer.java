@@ -10,6 +10,7 @@ import org.tastytrash.spatialGUI.client.SpatialGUIClient;
 import org.tastytrash.spatialGUI.util.MouseHandlerUtil;
 import org.tastytrash.spatialGUI.util.CameraUtil;
 import org.tastytrash.spatialGUI.mixin.gui.MouseHandlerAccessor;
+import org.tastytrash.spatialGUI.util.RenderUtil;
 
 //? if fabric {
  import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
@@ -21,7 +22,6 @@ import net.neoforged.neoforge.common.NeoForge;
 /*import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 *///?} else if >1.21.1 {
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import org.tastytrash.spatialGUI.util.RenderUtil;
 //?}
 
 public class SpatialGUIRenderer {
@@ -65,7 +65,7 @@ public class SpatialGUIRenderer {
 
         var client = Minecraft.getInstance();
         //? if >=26.2 {
-        /*if (screen != client.gui.screen()) return;
+        /*if (screen != client.screen) return;
          *///?} else {
         if (screen != client.screen) return;
         //?}
