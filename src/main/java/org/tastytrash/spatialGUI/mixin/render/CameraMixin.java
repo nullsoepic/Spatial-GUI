@@ -42,7 +42,6 @@ public abstract class CameraMixin {
     @Unique private static long parallaxBlendStartMs;
     @Unique private static final float PARALLAX_BLEND_MS = 150.0f;
 
-    @Unique private static double lastMouseX, lastMouseY;
     @Unique private static float freeLookYaw = 0f, freeLookPitch = 0f;
     @Unique private static boolean wasCrosshairMode;
 
@@ -78,9 +77,6 @@ public abstract class CameraMixin {
 
             boolean crosshairActive = SpatialGUIRenderer.isCrosshairModeActive();
             if (crosshairActive && !wasCrosshairMode) {
-                var mc = Minecraft.getInstance();
-                lastMouseX = ((MouseHandlerAccessor) mc.mouseHandler).getRawXpos();
-                lastMouseY = ((MouseHandlerAccessor) mc.mouseHandler).getRawYpos();
                 freeLookYaw = 0f;
                 freeLookPitch = 0f;
             }
@@ -133,19 +129,9 @@ public abstract class CameraMixin {
             float entityXRot = entity.getXRot();
 
             if (SpatialGUIRenderer.isCrosshairModeActive()) {
-                //? if >26.2 || <=1.21.1 {
-                /*double[] rel = MouseHandlerUtil.resetFreeLookDelta();
+                double[] rel = MouseHandlerUtil.resetFreeLookDelta();
                 double deltaX = rel[0];
                 double deltaY = rel[1];
-                *///?} else {
-                double deltaX, deltaY;
-                double curX = ((MouseHandlerAccessor) client.mouseHandler).getRawXpos();
-                double curY = ((MouseHandlerAccessor) client.mouseHandler).getRawYpos();
-                deltaX = curX - lastMouseX;
-                deltaY = curY - lastMouseY;
-                lastMouseX = curX;
-                lastMouseY = curY;
-                //?}
 
                 double sens = CameraUtil.calculateMouseSensitivity();
                 //? if >1.21.1 {

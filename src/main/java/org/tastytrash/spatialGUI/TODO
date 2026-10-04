@@ -2,6 +2,8 @@ __________ FIXES _________________
 ================================
 -------- HIGH PRIORITY ---------------
 
+First mouse movement causing snapping
+
 Sort mixin files into more different packages (when a PR isn't currently open)
 
 Add forge 1.20.1
@@ -32,10 +34,6 @@ __________ SUGGESTIONS/FEATURES _________________
 #58 Screen closing animation
 
 #56 Dynamic mode switching based on third vs first person
-
-#52 - Remove the 180 degree first person limit, make it a config, off by default
-
-#38 - Move or mirror third person camera to avoid blocks so first person doesnt activate as often
 
 Make the screen position unaffected by the bob (?)
 

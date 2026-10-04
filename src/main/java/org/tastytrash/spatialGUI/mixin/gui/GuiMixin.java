@@ -39,7 +39,6 @@ public class GuiMixin {
         if (renderer != null && SpatialGUIClient.isEnabled() && renderer.shouldCapture()) {
             SpatialGUIRenderer.skipWindowOverride = false;
             SpatialGUIRenderer.isExtractingScreen = true;
-            InventoryParticlesCompat.updateCursor(MouseHandlerUtil.getLastPos(true), MouseHandlerUtil.getLastPos(false));
             return renderer.createIsolatedGraphics();
         }
         return graphics;

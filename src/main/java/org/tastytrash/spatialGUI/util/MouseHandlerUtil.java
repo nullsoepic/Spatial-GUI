@@ -54,8 +54,8 @@ public class MouseHandlerUtil {
     public static double getLastPos(boolean isX) {
         return getLastPos(isX, getFallback(isX));
     }
-    //? if >26.2 || <1.21.11{
-    /*private static double freeLookDeltaX = 0;
+
+    private static double freeLookDeltaX = 0;
     private static double freeLookDeltaY = 0;
 
     public static void addFreeLookDelta(double xrel, double yrel) {
@@ -69,7 +69,6 @@ public class MouseHandlerUtil {
         freeLookDeltaY = 0;
         return result;
     }
-    *///? }
 
     public static void grabMouseForFirstPerson() {
         Minecraft mc = Minecraft.getInstance();

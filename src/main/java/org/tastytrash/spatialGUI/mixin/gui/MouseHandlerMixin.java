@@ -18,6 +18,9 @@ import org.tastytrash.spatialGUI.util.RenderUtil.QuadBasis;
 @Mixin(value = MouseHandler.class, priority = 1100)
 public class MouseHandlerMixin {
 
+    @Unique private static double lastPhysicalX;
+    @Unique private static double lastPhysicalY;
+
     @Unique
     private static boolean shouldApplyMouseOverride() {
         if (!SpatialGUIClient.isEnabled()) return false;
@@ -40,7 +43,7 @@ public class MouseHandlerMixin {
             return;
         }
 
-        if (!shouldApplyMouseOverride() || SpatialGUIRenderer.isCrosshairModeActive()) return;
+        if (!shouldApplyMouseOverride()) return;
 
         var renderer = SpatialGUIClient.renderer();
         if (renderer == null) return;
@@ -51,11 +54,17 @@ public class MouseHandlerMixin {
         double guiScale = SpatialGUI.config.getEffectiveGuiScale(
                 mc.getWindow().getWidth(), mc.getWindow().getHeight());
 
+        double sourceX = SpatialGUIRenderer.isCrosshairModeActive()
+                ? mc.getWindow().getScreenWidth() / 2.0
+                : x;
+
+        double sourceY = SpatialGUIRenderer.isCrosshairModeActive()
+                ? mc.getWindow().getScreenHeight() / 2.0
+                : y;
+
         Vector2d mouse = MouseHandlerUtil.getOrComputeMousePosition(
-                x, y, quad,
-                renderer.getInventoryRenderer().getCylinderBasis(),
-                guiScale,
-                renderer.getTargetManager().getInventoryTarget());
+                sourceX, sourceY, quad, renderer.getInventoryRenderer().getCylinderBasis(), guiScale, renderer.getTargetManager().getInventoryTarget()
+        );
 
         if (mouse == null) return;
 
@@ -69,6 +78,16 @@ public class MouseHandlerMixin {
 
         double oldX = mouseHandler.getRawXpos();
         double oldY = mouseHandler.getRawYpos();
+
+        double deltaX = x - lastPhysicalX;
+        double deltaY = y - lastPhysicalY;
+
+        lastPhysicalX = x;
+        lastPhysicalY = y;
+
+        if (SpatialGUIRenderer.isCrosshairModeActive()) {
+            MouseHandlerUtil.addFreeLookDelta(deltaX, deltaY);
+        }
 
         mouseHandler.setRawXpos(mappedX);
         mouseHandler.setRawYpos(mappedY);
