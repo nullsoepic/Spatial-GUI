@@ -17,6 +17,9 @@ public class MouseHandlerUtil {
     private static double cachedSrcY = Double.NaN;
     private static Vector2d cachedMouse = null;
 
+    private static double physicalX = Double.NaN;
+    private static double physicalY = Double.NaN;
+
     public static double getFallback(boolean isX) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.getWindow() != null) {
@@ -53,6 +56,19 @@ public class MouseHandlerUtil {
 
     public static double getLastPos(boolean isX) {
         return getLastPos(isX, getFallback(isX));
+    }
+
+    public static void setPhysicalPos(double x, double y) {
+        physicalX = x;
+        physicalY = y;
+    }
+
+    public static double getPhysicalX(double fallback) {
+        return Double.isNaN(physicalX) ? fallback : physicalX;
+    }
+
+    public static double getPhysicalY(double fallback) {
+        return Double.isNaN(physicalY) ? fallback : physicalY;
     }
 
     private static double freeLookDeltaX = 0;

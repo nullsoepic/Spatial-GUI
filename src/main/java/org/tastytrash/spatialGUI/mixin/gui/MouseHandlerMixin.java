@@ -43,6 +43,8 @@ public class MouseHandlerMixin {
             return;
         }
 
+        MouseHandlerUtil.setPhysicalPos(x, y);
+
         if (!shouldApplyMouseOverride()) return;
 
         var renderer = SpatialGUIClient.renderer();
@@ -150,5 +152,4 @@ public class MouseHandlerMixin {
         spatialGUI$acc.setRawXpos(spatialGUI$preReleaseX);
         spatialGUI$acc.setRawYpos(spatialGUI$preReleaseY);
     }
-
 }

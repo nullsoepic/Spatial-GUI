@@ -118,8 +118,9 @@ public abstract class CameraMixin {
             sideOffset = -sideOffset;
         }
 
-        double rawMouseX = ((MouseHandlerAccessor) client.mouseHandler).getRawXpos();
-        double rawMouseY = ((MouseHandlerAccessor) client.mouseHandler).getRawYpos();
+        var acc = (MouseHandlerAccessor) client.mouseHandler;
+        double rawMouseX = MouseHandlerUtil.getPhysicalX(acc.getRawXpos());
+        double rawMouseY = MouseHandlerUtil.getPhysicalY(acc.getRawYpos());
 
         float normX = Math.max(-1f, Math.min(1f, (float) rawMouseX / client.getWindow().getScreenWidth() * 2f - 1f));
         float normY = Math.max(-1f, Math.min(1f, (float) rawMouseY / client.getWindow().getScreenHeight() * 2f - 1f));
