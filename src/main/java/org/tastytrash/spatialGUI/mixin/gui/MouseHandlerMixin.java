@@ -103,14 +103,7 @@ public class MouseHandlerMixin {
         var renderer = SpatialGUIClient.renderer();
         if (renderer == null) return;
 
-        Vector2d mouse = renderer.updateMousePosition(
-                MouseHandlerUtil.getSourceX(), MouseHandlerUtil.getSourceY());
-
         MouseHandlerAccessor mouseHandler = (MouseHandlerAccessor) this;
-        if (mouse == null) return;
-
-        double mappedX = mouse.x;
-        double mappedY = mouse.y;
 
         boolean ignoreFirstMove = mouseHandler.getIgnoreFirstMove();
         if (ignoreFirstMove) {
@@ -119,19 +112,26 @@ public class MouseHandlerMixin {
             delta[1] = 0;
         }
 
-        double oldX = mouseHandler.getRawXpos();
-        double oldY = mouseHandler.getRawYpos();
-
+        // free-look must track input even when the ray misses the quad, or
+        // turning past the screen edge deadlocks the camera
         if (SpatialGUIRenderer.isCrosshairModeActive() && !ignoreFirstMove) {
             MouseHandlerUtil.addFreeLookDelta(delta[0], delta[1]);
         }
 
-        mouseHandler.setRawXpos(mappedX);
-        mouseHandler.setRawYpos(mappedY);
+        Vector2d mouse = renderer.updateMousePosition(
+                MouseHandlerUtil.getSourceX(), MouseHandlerUtil.getSourceY());
 
-        if (!ignoreFirstMove) {
-            mouseHandler.setAccumulatedDX(mouseHandler.getAccumulatedDX() + mappedX - oldX);
-            mouseHandler.setAccumulatedDY(mouseHandler.getAccumulatedDY() + mappedY - oldY);
+        if (mouse != null) {
+            double oldX = mouseHandler.getRawXpos();
+            double oldY = mouseHandler.getRawYpos();
+
+            mouseHandler.setRawXpos(mouse.x);
+            mouseHandler.setRawYpos(mouse.y);
+
+            if (!ignoreFirstMove) {
+                mouseHandler.setAccumulatedDX(mouseHandler.getAccumulatedDX() + mouse.x - oldX);
+                mouseHandler.setAccumulatedDY(mouseHandler.getAccumulatedDY() + mouse.y - oldY);
+            }
         }
 
         ci.cancel();
