@@ -372,7 +372,15 @@ public class SpatialGUIRenderer {
     public net.minecraft.client.gui.render.GuiRenderer getScreenGuiRenderer() {
         return screenExtractor.getScreenGuiRenderer();
     }
+    //?}
 
+    //? if >=26.1.2 {
+    public net.minecraft.client.renderer.state.gui.GuiRenderState getScreenRenderState() {
+        return screenExtractor.getScreenRenderState();
+    }
+    //?}
+
+    //? if >1.21.1 {
     public GpuBufferSlice getCapturedProjectionBuffer() {
         return inventoryRenderer.getCapturedProjectionBuffer();
     }

@@ -100,6 +100,13 @@ public class ScreenExtractor {
     //?}
 
     //? if >=26.1.2 {
+    public GuiRenderState getScreenRenderState() {
+        ensureScreenGuiRenderer();
+        return screenRenderState;
+    }
+    //?}
+
+    //? if >=26.1.2 {
     public GuiGraphicsExtractor createIsolatedGraphics() {
         ensureScreenGuiRenderer();
         int mouseX = MouseHandlerUtil.getHoverX();

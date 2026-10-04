@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.tastytrash.spatialGUI.SpatialGUI;
 import org.tastytrash.spatialGUI.client.SpatialGUIClient;
@@ -251,6 +252,17 @@ public abstract class GameRendererMixin {
             renderer.onFrameStart();
         }
     }
+
+    //? if >=26.1.2 {
+    @ModifyVariable(method = "extract", at = @At("HEAD"), ordinal = 0)
+    private boolean spatialGUI$forceWorldRenderWhenCapturing(boolean advanceGameTime) {
+        var renderer = SpatialGUIClient.renderer();
+        if (renderer != null && SpatialGUIClient.isEnabled() && renderer.shouldCapture()) {
+            return true;
+        }
+        return advanceGameTime;
+    }
+    //?}
 
     @Inject(method = "processBlurEffect()V", at = @At("HEAD"), cancellable = true)
     private void spatialGUI$cancelBlurEffect(CallbackInfo ci) {

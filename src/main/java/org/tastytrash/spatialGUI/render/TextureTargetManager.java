@@ -49,6 +49,21 @@ public class TextureTargetManager {
         //?}
     }
 
+    //? if >1.21.1 {
+    public void clearTargetDepthForGuiDraw() {
+        if (inventoryTarget == null) {
+            return;
+        }
+
+        var depthTexture = inventoryTarget.getDepthTexture();
+        if (depthTexture == null) {
+            return;
+        }
+
+        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(depthTexture, 0.0);
+    }
+    //?}
+
     public void prepareTarget() {
         Minecraft client = Minecraft.getInstance();
         int windowWidth = client.getWindow().getWidth();

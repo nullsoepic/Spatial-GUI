@@ -39,6 +39,15 @@ public class SpatialGUIClient {
         SpatialGUIKeybinds.register();
 
         ScreenEvents.BEFORE_INIT.register((clientArg, screen, scaledWidth, scaledHeight) -> {
+            //? if >=26.2 {
+            /*if (screen != Minecraft.getInstance().gui.screen()) {
+                return;
+            }
+            *///?} else {
+            if (screen != Minecraft.getInstance().screen) {
+                return;
+            }
+            //?}
             if (SpatialGUIClient.shouldHookScreen(screen)) {
                 renderer.hookScreen(screen);
             }

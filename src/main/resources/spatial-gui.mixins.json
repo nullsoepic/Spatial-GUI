@@ -10,6 +10,7 @@
     "client.MinecraftMixin",
     "client.OptionsMixin",
     "compat.DynamicCrosshairMixin",
+    "compat.GuiRenderStateMixin",
     "gui.DebugScreenOverlayMixin",
     "gui.GuiMixin",
     "gui.GuiRendererAccessor",

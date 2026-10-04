@@ -1,6 +1,7 @@
 package org.tastytrash.spatialGUI.mixin.gui;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 
 //? if neoforge && >1.21.1 {
 /*//? if <26.2 {
@@ -49,7 +50,9 @@ public class GuiRendererMixin {
         }
 
         if ((Object) this == renderer.getScreenGuiRenderer()) {
-            return renderer.getTargetManager().getTarget();
+            var target = renderer.getTargetManager().getTarget();
+            renderer.getTargetManager().clearTargetDepthForGuiDraw();
+            return target;
         }
 
         return original;
