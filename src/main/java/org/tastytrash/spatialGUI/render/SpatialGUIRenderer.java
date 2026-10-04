@@ -2,13 +2,14 @@ package org.tastytrash.spatialGUI.render;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector2d;
 import org.tastytrash.spatialGUI.SpatialGUI;
 import org.tastytrash.spatialGUI.client.SpatialGUIClient;
 import org.tastytrash.spatialGUI.util.MouseHandlerUtil;
 import org.tastytrash.spatialGUI.util.CameraUtil;
+import org.tastytrash.spatialGUI.mixin.gui.MouseHandlerAccessor;
 
 //? if fabric {
  import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
@@ -20,6 +21,7 @@ import net.neoforged.neoforge.common.NeoForge;
 /*import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 *///?} else if >1.21.1 {
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import org.tastytrash.spatialGUI.util.RenderUtil;
 //?}
 
 public class SpatialGUIRenderer {
@@ -84,6 +86,10 @@ public class SpatialGUIRenderer {
             ? SpatialGUI.config.firstPersonModeInventory
             : SpatialGUI.config.firstPersonModeContainers) || SpatialGUIClient.getSwitchedToFirstPersonDueToBlock();
         SpatialGUIClient.setEffectiveFirstPersonMode(isFirstPerson);
+        MouseHandlerUtil.resetMouseState();
+        if (!isFirstPerson) {
+            targetManager.prepareTarget();
+        }
 
         //? if fabric && >=26.1.2 {
         ScreenEvents.afterExtract(screen).register((screenArg, extractor, mouseX, mouseY, tickDelta) -> prepareTarget());
@@ -183,6 +189,61 @@ public class SpatialGUIRenderer {
 
     public void prepareTarget() {
         targetManager.prepareTarget();
+    }
+
+    public void updateMousePosition() {
+        if (!shouldCapture()) {
+            return;
+        }
+
+        Minecraft client = Minecraft.getInstance();
+        MouseHandlerAccessor mouseHandler = (MouseHandlerAccessor) client.mouseHandler;
+        boolean isFirstPerson = SpatialGUIClient.getEffectiveFirstPersonMode();
+
+        double sourceX = SpatialGUIRenderer.isCrosshairModeActive()
+                ? client.getWindow().getScreenWidth() / 2.0
+                : MouseHandlerUtil.getPhysicalX(mouseHandler.getRawXpos());
+        double sourceY = SpatialGUIRenderer.isCrosshairModeActive()
+                ? client.getWindow().getScreenHeight() / 2.0
+                : MouseHandlerUtil.getPhysicalY(mouseHandler.getRawYpos());
+
+        MouseHandlerUtil.clearCachedMousePosition();
+
+        Vector2d mappedMouse = updateMousePosition(sourceX, sourceY);
+
+        if (mappedMouse == null) {
+            return;
+        }
+
+        if (!isFirstPerson) {
+            mouseHandler.setRawXpos(mappedMouse.x);
+            mouseHandler.setRawYpos(mappedMouse.y);
+        }
+    }
+
+    public Vector2d updateMousePosition(double sourceX, double sourceY) {
+        Minecraft client = Minecraft.getInstance();
+        RenderUtil.QuadBasis quadBasis = inventoryRenderer.getQuadBasis();
+        if (quadBasis == null) {
+            return null;
+        }
+
+        double guiScale = SpatialGUI.config.getEffectiveGuiScale(client.getWindow().getWidth(), client.getWindow().getHeight());
+        Vector2d mappedMouse = MouseHandlerUtil.getOrComputeMousePosition(
+                sourceX, sourceY, quadBasis, inventoryRenderer.getCylinderBasis(), guiScale,
+                targetManager.getInventoryTarget()
+        );
+
+        if (mappedMouse == null) {
+            return null;
+        }
+
+        double mappedX = mappedMouse.x / guiScale;
+        double mappedY = mappedMouse.y / guiScale;
+        mappedX *= (double) client.getWindow().getScreenWidth() / client.getWindow().getGuiScaledWidth();
+        mappedY *= (double) client.getWindow().getScreenHeight() / client.getWindow().getGuiScaledHeight();
+
+        return new Vector2d(mappedX, mappedY);
     }
 
     public boolean shouldCapture() {

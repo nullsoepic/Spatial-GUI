@@ -12,6 +12,12 @@ public interface MouseHandlerAccessor {
     @Accessor("mouseGrabbed")
     boolean getMouseGrabbed();
 
+    @Accessor("ignoreFirstMove")
+    boolean getIgnoreFirstMove();
+
+    @Accessor("ignoreFirstMove")
+    void setIgnoreFirstMove(boolean value);
+
     @Accessor("xpos")
     double getRawXpos();
 

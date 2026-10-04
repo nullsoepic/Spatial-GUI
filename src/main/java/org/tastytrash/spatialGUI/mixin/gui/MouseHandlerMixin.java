@@ -1,5 +1,6 @@
 package org.tastytrash.spatialGUI.mixin.gui;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.screens.Screen;
@@ -13,7 +14,6 @@ import org.tastytrash.spatialGUI.SpatialGUI;
 import org.tastytrash.spatialGUI.client.SpatialGUIClient;
 import org.tastytrash.spatialGUI.render.SpatialGUIRenderer;
 import org.tastytrash.spatialGUI.util.MouseHandlerUtil;
-import org.tastytrash.spatialGUI.util.RenderUtil.QuadBasis;
 
 @Mixin(value = MouseHandler.class, priority = 1100)
 public class MouseHandlerMixin {
@@ -35,6 +35,16 @@ public class MouseHandlerMixin {
         return renderer != null && SpatialGUIClient.shouldHookScreen(renderer.getHookedScreen());
     }
 
+    @ModifyReturnValue(method = "getScaledXPos(Lcom/mojang/blaze3d/platform/Window;)D", at = @At("RETURN"))
+    private double spatialGUI$overrideScaledX(double original) {
+        return shouldApplyMouseOverride() ? MouseHandlerUtil.getLastPos(true, original) : original;
+    }
+
+    @ModifyReturnValue(method = "getScaledYPos(Lcom/mojang/blaze3d/platform/Window;)D", at = @At("RETURN"))
+    private double spatialGUI$overrideScaledY(double original) {
+        return shouldApplyMouseOverride() ? MouseHandlerUtil.getLastPos(false, original) : original;
+    }
+
     @Inject(method = "onMove(JDD)V", at = @At("HEAD"), cancellable = true)
     private void spatialGUI$onMove(long handle, double x, double y, CallbackInfo ci) {
         Minecraft mc = Minecraft.getInstance();
@@ -43,18 +53,16 @@ public class MouseHandlerMixin {
             return;
         }
 
-        MouseHandlerUtil.setPhysicalPos(x, y);
+        MouseHandlerUtil.setPhysicalPos(x, y, ((MouseHandlerAccessor) this).getMouseGrabbed());
+        double deltaX = x - lastPhysicalX;
+        double deltaY = y - lastPhysicalY;
+        lastPhysicalX = x;
+        lastPhysicalY = y;
 
         if (!shouldApplyMouseOverride()) return;
 
         var renderer = SpatialGUIClient.renderer();
         if (renderer == null) return;
-
-        QuadBasis quad = renderer.getInventoryRenderer().getQuadBasis();
-        if (quad == null) return;
-
-        double guiScale = SpatialGUI.config.getEffectiveGuiScale(
-                mc.getWindow().getWidth(), mc.getWindow().getHeight());
 
         double sourceX = SpatialGUIRenderer.isCrosshairModeActive()
                 ? mc.getWindow().getScreenWidth() / 2.0
@@ -64,38 +72,35 @@ public class MouseHandlerMixin {
                 ? mc.getWindow().getScreenHeight() / 2.0
                 : y;
 
-        Vector2d mouse = MouseHandlerUtil.getOrComputeMousePosition(
-                sourceX, sourceY, quad, renderer.getInventoryRenderer().getCylinderBasis(), guiScale, renderer.getTargetManager().getInventoryTarget()
-        );
-
-        if (mouse == null) return;
-
-        double mappedX = mouse.x / guiScale;
-        double mappedY = mouse.y / guiScale;
-
-        mappedX *= (double) mc.getWindow().getScreenWidth() / mc.getWindow().getGuiScaledWidth();
-        mappedY *= (double) mc.getWindow().getScreenHeight() / mc.getWindow().getGuiScaledHeight();
+        Vector2d mouse = renderer.updateMousePosition(sourceX, sourceY);
 
         MouseHandlerAccessor mouseHandler = (MouseHandlerAccessor) this;
+        if (mouse == null) return;
+
+        double mappedX = mouse.x;
+        double mappedY = mouse.y;
+
+        boolean ignoreFirstMove = mouseHandler.getIgnoreFirstMove();
+        if (ignoreFirstMove) {
+            mouseHandler.setIgnoreFirstMove(false);
+            deltaX = 0;
+            deltaY = 0;
+        }
 
         double oldX = mouseHandler.getRawXpos();
         double oldY = mouseHandler.getRawYpos();
 
-        double deltaX = x - lastPhysicalX;
-        double deltaY = y - lastPhysicalY;
-
-        lastPhysicalX = x;
-        lastPhysicalY = y;
-
-        if (SpatialGUIRenderer.isCrosshairModeActive()) {
+        if (SpatialGUIRenderer.isCrosshairModeActive() && !ignoreFirstMove) {
             MouseHandlerUtil.addFreeLookDelta(deltaX, deltaY);
         }
 
         mouseHandler.setRawXpos(mappedX);
         mouseHandler.setRawYpos(mappedY);
 
-        mouseHandler.setAccumulatedDX(mouseHandler.getAccumulatedDX() + mappedX - oldX);
-        mouseHandler.setAccumulatedDY(mouseHandler.getAccumulatedDY() + mappedY - oldY);
+        if (!ignoreFirstMove) {
+            mouseHandler.setAccumulatedDX(mouseHandler.getAccumulatedDX() + mappedX - oldX);
+            mouseHandler.setAccumulatedDY(mouseHandler.getAccumulatedDY() + mappedY - oldY);
+        }
 
         ci.cancel();
     }

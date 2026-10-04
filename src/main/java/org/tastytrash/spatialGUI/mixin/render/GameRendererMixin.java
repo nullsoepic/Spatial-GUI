@@ -1,7 +1,5 @@
 package org.tastytrash.spatialGUI.mixin.render;
 
-import com.mojang.blaze3d.platform.Lighting;import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,19 +8,15 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.Redirect;import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.tastytrash.spatialGUI.SpatialGUI;
 import org.tastytrash.spatialGUI.client.SpatialGUIClient;
 import org.tastytrash.spatialGUI.render.SpatialGUIRenderer;
 import org.tastytrash.spatialGUI.render.WorldBlurRenderer;
-import org.tastytrash.spatialGUI.util.MouseHandlerUtil;
 
 //? if >1.21.1 {
 import net.minecraft.client.renderer.fog.FogRenderer;
-import static com.mojang.blaze3d.platform.Lighting.Entry.LEVEL;
- //?}
+//?}
 
 //? if <26.1.2 {
 /*import net.minecraft.client.gui.GuiGraphics;
@@ -294,6 +288,14 @@ public abstract class GameRendererMixin {
 
             SpatialGUIRenderer.skipWindowOverride = true;
             this.gameRenderState.windowRenderState.guiScale = Minecraft.getInstance().getWindow().getGuiScale();
+        }
+    }
+
+    @Inject(method = "extractGui", at = @At("HEAD"))
+    private void spatialGUI$refreshMousePosition(CallbackInfo ci) {
+        var renderer = SpatialGUIClient.renderer();
+        if (renderer != null) {
+            renderer.updateMousePosition();
         }
     }
 

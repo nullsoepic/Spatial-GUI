@@ -129,8 +129,9 @@ public class ScreenExtractor {
             srcX = mc.getWindow().getScreenWidth() / 2.0;
             srcY = mc.getWindow().getScreenHeight() / 2.0;
         } else {
-            srcX = ((MouseHandlerAccessor) mc.mouseHandler).getRawXpos();
-            srcY = ((MouseHandlerAccessor) mc.mouseHandler).getRawYpos();
+            var mouseHandler = (MouseHandlerAccessor) mc.mouseHandler;
+            srcX = MouseHandlerUtil.getPhysicalX(mouseHandler.getRawXpos());
+            srcY = MouseHandlerUtil.getPhysicalY(mouseHandler.getRawYpos());
         }
 
         double guiScale = SpatialGUI.config.getEffectiveGuiScale(mc.getWindow().getWidth(), mc.getWindow().getHeight());

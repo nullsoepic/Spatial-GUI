@@ -8,6 +8,10 @@ import org.tastytrash.spatialGUI.mixin.gui.MouseHandlerAccessor;
 import org.tastytrash.spatialGUI.render.SpatialGUIRenderer;
 import org.tastytrash.spatialGUI.util.RenderUtil.QuadBasis;
 import org.tastytrash.spatialGUI.util.RenderUtil.CylinderBasis;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.system.MemoryStack;
+
+import java.nio.DoubleBuffer;
 
 public class MouseHandlerUtil {
     private static boolean weGrabbedMouse = false;
@@ -19,6 +23,30 @@ public class MouseHandlerUtil {
 
     private static double physicalX = Double.NaN;
     private static double physicalY = Double.NaN;
+
+    public static void resetMouseState() {
+        Minecraft mc = Minecraft.getInstance();
+        lastPosX = Double.NaN;
+        lastPosY = Double.NaN;
+        cachedSrcX = Double.NaN;
+        cachedSrcY = Double.NaN;
+        cachedMouse = null;
+        freeLookDeltaX = 0;
+        freeLookDeltaY = 0;
+
+        if (((MouseHandlerAccessor) mc.mouseHandler).getMouseGrabbed()) {
+            physicalX = mc.getWindow().getScreenWidth() / 2.0;
+            physicalY = mc.getWindow().getScreenHeight() / 2.0;
+        } else {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                DoubleBuffer x = stack.mallocDouble(1);
+                DoubleBuffer y = stack.mallocDouble(1);
+                GLFW.glfwGetCursorPos(mc.getWindow().handle(), x, y);
+                physicalX = x.get(0);
+                physicalY = y.get(0);
+            }
+        }
+    }
 
     public static double getFallback(boolean isX) {
         Minecraft mc = Minecraft.getInstance();
@@ -58,9 +86,16 @@ public class MouseHandlerUtil {
         return getLastPos(isX, getFallback(isX));
     }
 
-    public static void setPhysicalPos(double x, double y) {
+    public static void setPhysicalPos(double x, double y, boolean mouseGrabbed) {
+        if (mouseGrabbed) return;
         physicalX = x;
         physicalY = y;
+    }
+
+    public static void clearCachedMousePosition() {
+        cachedSrcX = Double.NaN;
+        cachedSrcY = Double.NaN;
+        cachedMouse = null;
     }
 
     public static double getPhysicalX(double fallback) {
