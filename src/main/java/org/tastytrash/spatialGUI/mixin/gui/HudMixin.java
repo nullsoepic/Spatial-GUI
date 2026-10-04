@@ -30,7 +30,12 @@ public class HudMixin {
         }
     }
 
-    //? if >=26.1.2 {
+    //? if 1.21.11 && neoforge {
+    /*@Inject(method = {"renderHotbar", "renderItemHotbar", "renderHealthLevel", "renderArmorLevel",
+            "renderFoodLevel", "renderAirLevel", "renderVehicleHealth", "renderContextualInfoBarBackground",
+            "renderExperienceLevel", "renderContextualInfoBar", "renderSelectedItemName", "renderEffects", "renderBossOverlay"},
+            at = @At("HEAD"), cancellable = true)
+    *///?} else if >=26.1.2 {
     //? if neoforge {
     /*@Inject(method = {"extractHotbar", "extractHealthLevel", "extractVehicleHealth",
             "extractContextualInfoBarBackground", "extractExperienceLevel", "extractContextualInfoBar",
@@ -61,7 +66,16 @@ public class HudMixin {
         }
     }
 
-    //? if >=26.1.2 {
+    //? if 1.21.11 && neoforge {
+    /*@Inject(method = "render", at = @At("HEAD"), cancellable = true)
+    private void spatialGUI$hideHud(CallbackInfo ci) {
+        if (SpatialGUIClient.isEnabled() && SpatialGUI.config.hideHud
+                && SpatialGUIClient.renderer() != null
+                && SpatialGUIClient.renderer().getHookedScreen() != null) {
+            ci.cancel();
+        }
+    }
+    *///?} else if >=26.1.2 {
     //? if neoforge {
     /*@Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
     private void spatialGUI$hideHud(CallbackInfo ci) {
