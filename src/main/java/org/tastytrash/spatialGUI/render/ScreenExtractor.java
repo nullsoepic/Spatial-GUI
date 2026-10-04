@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import org.joml.Vector2d;
 import org.tastytrash.spatialGUI.SpatialGUI;
-import org.tastytrash.spatialGUI.compat.InventoryParticlesCompat;
 import org.tastytrash.spatialGUI.mixin.gui.MouseHandlerAccessor;
 import org.tastytrash.spatialGUI.util.MouseHandlerUtil;
 import org.tastytrash.spatialGUI.util.RenderUtil;
@@ -141,8 +140,6 @@ public class ScreenExtractor {
 
         int mouseX = (int) MouseHandlerUtil.getLastPos(true);
         int mouseY = (int) MouseHandlerUtil.getLastPos(false);
-
-        InventoryParticlesCompat.updateCursor(mouseX, mouseY);
 
         SpatialGUIRenderer.isExtractingScreen = true;
         //? if >=26.1.2 {

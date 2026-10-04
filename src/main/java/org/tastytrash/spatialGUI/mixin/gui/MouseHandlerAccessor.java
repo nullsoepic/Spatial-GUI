@@ -23,4 +23,16 @@ public interface MouseHandlerAccessor {
 
     @Accessor("ypos")
     void setRawYpos(double value);
+
+    @Accessor("accumulatedDX")
+    double getAccumulatedDX();
+
+    @Accessor("accumulatedDY")
+    double getAccumulatedDY();
+
+    @Accessor("accumulatedDX")
+    void setAccumulatedDX(double value);
+
+    @Accessor("accumulatedDY")
+    void setAccumulatedDY(double value);
 }
