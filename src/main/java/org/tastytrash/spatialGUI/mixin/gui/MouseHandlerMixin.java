@@ -26,9 +26,6 @@ public class MouseHandlerMixin {
     @Shadow private double accumulatedDY;
     *///?}
 
-    @Unique private static double lastPhysicalX;
-    @Unique private static double lastPhysicalY;
-
     @Unique
     private static boolean shouldApplyMouseOverride() {
         if (!SpatialGUIClient.isEnabled()) return false;
@@ -94,26 +91,19 @@ public class MouseHandlerMixin {
             return;
         }
 
-        MouseHandlerUtil.setPhysicalPos(x, y, ((MouseHandlerAccessor) this).getMouseGrabbed());
-        double deltaX = x - lastPhysicalX;
-        double deltaY = y - lastPhysicalY;
-        lastPhysicalX = x;
-        lastPhysicalY = y;
+        double[] delta = MouseHandlerUtil.captureMove(x, y, ((MouseHandlerAccessor) this).getMouseGrabbed());
+        //? if >=26.3 {
+//        delta[0] = xrel;
+//        delta[1] = yrel;
+        //?}
 
         if (!shouldApplyMouseOverride()) return;
 
         var renderer = SpatialGUIClient.renderer();
         if (renderer == null) return;
 
-        double sourceX = SpatialGUIRenderer.isCrosshairModeActive()
-                ? mc.getWindow().getScreenWidth() / 2.0
-                : x;
-
-        double sourceY = SpatialGUIRenderer.isCrosshairModeActive()
-                ? mc.getWindow().getScreenHeight() / 2.0
-                : y;
-
-        Vector2d mouse = renderer.updateMousePosition(sourceX, sourceY);
+        Vector2d mouse = renderer.updateMousePosition(
+                MouseHandlerUtil.getSourceX(), MouseHandlerUtil.getSourceY());
 
         MouseHandlerAccessor mouseHandler = (MouseHandlerAccessor) this;
         if (mouse == null) return;
@@ -124,15 +114,15 @@ public class MouseHandlerMixin {
         boolean ignoreFirstMove = mouseHandler.getIgnoreFirstMove();
         if (ignoreFirstMove) {
             mouseHandler.setIgnoreFirstMove(false);
-            deltaX = 0;
-            deltaY = 0;
+            delta[0] = 0;
+            delta[1] = 0;
         }
 
         double oldX = mouseHandler.getRawXpos();
         double oldY = mouseHandler.getRawYpos();
 
         if (SpatialGUIRenderer.isCrosshairModeActive() && !ignoreFirstMove) {
-            MouseHandlerUtil.addFreeLookDelta(deltaX, deltaY);
+            MouseHandlerUtil.addFreeLookDelta(delta[0], delta[1]);
         }
 
         mouseHandler.setRawXpos(mappedX);

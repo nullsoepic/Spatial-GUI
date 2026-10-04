@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import org.joml.Vector2d;
 import org.tastytrash.spatialGUI.SpatialGUI;
-import org.tastytrash.spatialGUI.mixin.gui.MouseHandlerAccessor;
 import org.tastytrash.spatialGUI.util.MouseHandlerUtil;
 import org.tastytrash.spatialGUI.util.RenderUtil;
 import org.tastytrash.spatialGUI.util.RenderUtil.QuadBasis;
@@ -103,15 +102,15 @@ public class ScreenExtractor {
     //? if >=26.1.2 {
     public GuiGraphicsExtractor createIsolatedGraphics() {
         ensureScreenGuiRenderer();
-        int mouseX = (int) MouseHandlerUtil.getLastPos(true);
-        int mouseY = (int) MouseHandlerUtil.getLastPos(false);
+        int mouseX = MouseHandlerUtil.getHoverX();
+        int mouseY = MouseHandlerUtil.getHoverY();
         return new GuiGraphicsExtractor(Minecraft.getInstance(), screenRenderState, mouseX, mouseY);
     }
     //?} else if >1.21.1 {
     /*public GuiGraphics createIsolatedGraphics() {
         ensureScreenGuiRenderer();
-        int mouseX = (int) MouseHandlerUtil.getLastPos(true);
-        int mouseY = (int) MouseHandlerUtil.getLastPos(false);
+        int mouseX = MouseHandlerUtil.getHoverX();
+        int mouseY = MouseHandlerUtil.getHoverY();
         return new GuiGraphics(Minecraft.getInstance(), screenRenderState, mouseX, mouseY);
     }
     *///?}
@@ -123,24 +122,14 @@ public class ScreenExtractor {
     public void extractIsolatedScreen(Screen screen, float partialTick, QuadBasis quadBasis, CylinderBasis cylinderBasis, TextureTargetManager targetManager, com.llamalad7.mixinextras.injector.wrapoperation.Operation<Void> renderOperation) {
         ensureScreenGuiRenderer();
         Minecraft mc = Minecraft.getInstance();
-
-        double srcX, srcY;
-        if (SpatialGUIRenderer.isCrosshairModeActive()) {
-            srcX = mc.getWindow().getScreenWidth() / 2.0;
-            srcY = mc.getWindow().getScreenHeight() / 2.0;
-        } else {
-            var mouseHandler = (MouseHandlerAccessor) mc.mouseHandler;
-            srcX = MouseHandlerUtil.getPhysicalX(mouseHandler.getRawXpos());
-            srcY = MouseHandlerUtil.getPhysicalY(mouseHandler.getRawYpos());
-        }
-
         double guiScale = SpatialGUI.config.getEffectiveGuiScale(mc.getWindow().getWidth(), mc.getWindow().getHeight());
         if (quadBasis != null) {
-            MouseHandlerUtil.getOrComputeMousePosition(srcX, srcY, quadBasis, cylinderBasis, guiScale, targetManager.getInventoryTarget());
+            MouseHandlerUtil.mapMousePosition(MouseHandlerUtil.getSourceX(), MouseHandlerUtil.getSourceY(),
+                    quadBasis, cylinderBasis, guiScale, targetManager.getInventoryTarget());
         }
 
-        int mouseX = (int) MouseHandlerUtil.getLastPos(true);
-        int mouseY = (int) MouseHandlerUtil.getLastPos(false);
+        int mouseX = MouseHandlerUtil.getHoverX();
+        int mouseY = MouseHandlerUtil.getHoverY();
 
         SpatialGUIRenderer.isExtractingScreen = true;
         //? if >=26.1.2 {

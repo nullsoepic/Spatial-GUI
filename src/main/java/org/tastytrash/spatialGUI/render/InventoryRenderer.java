@@ -83,6 +83,7 @@ public class InventoryRenderer {
     private final TextureTargetManager targetManager;
     private QuadBasis quadBasis;
     private CylinderBasis cylinderBasis;
+    private long basisFrame = -1;
     private int meshQuadCount = 1;
     private static final int CURVED_SEGMENTS = 32;
     private long screenOpenTime = 0;
@@ -148,13 +149,21 @@ public class InventoryRenderer {
     }
 
     public QuadBasis getQuadBasis() {
-        updateQuadBasis();
+        refreshBasisIfStale();
         return quadBasis;
     }
 
     public CylinderBasis getCylinderBasis() {
-        updateQuadBasis();
+        refreshBasisIfStale();
         return cylinderBasis;
+    }
+
+    private void refreshBasisIfStale() {
+        long frame = SpatialGUIRenderer.frameCounter();
+        if (basisFrame != frame) {
+            updateQuadBasis();
+            basisFrame = frame;
+        }
     }
 
     private static boolean isCurvedScreenActive(boolean isFirstPerson) {
