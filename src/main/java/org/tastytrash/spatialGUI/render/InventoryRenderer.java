@@ -450,7 +450,9 @@ public class InventoryRenderer {
             try (var renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                     () -> "Spatial GUI",
                     output,
-                    java.util.OptionalInt.empty()
+                    java.util.OptionalInt.empty(),
+                    mainTarget.getDepthTextureView(),
+                    java.util.OptionalDouble.empty()
             )) {
                 renderPass.setPipeline(InventoryRenderer.INVENTORY_PIPELINE);
                 RenderSystem.bindDefaultUniforms(renderPass);
