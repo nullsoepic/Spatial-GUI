@@ -26,13 +26,11 @@ public class MouseHandlerMixin {
     @Shadow private double accumulatedDY;
     *///?}
 
-    @Unique private static double lastPhysicalX;
-    @Unique private static double lastPhysicalY;
-
     @Unique
     private static boolean shouldApplyMouseOverride() {
         if (!SpatialGUIClient.isEnabled()) return false;
         Minecraft client = Minecraft.getInstance();
+        if (client.level == null) return false;
         //? if >=26.2 {
         /*Screen screen = client.screen;
          *///?} else {
@@ -94,53 +92,46 @@ public class MouseHandlerMixin {
             return;
         }
 
-        MouseHandlerUtil.setPhysicalPos(x, y, ((MouseHandlerAccessor) this).getMouseGrabbed());
-        double deltaX = x - lastPhysicalX;
-        double deltaY = y - lastPhysicalY;
-        lastPhysicalX = x;
-        lastPhysicalY = y;
+        double[] delta = MouseHandlerUtil.captureMove(x, y, ((MouseHandlerAccessor) this).getMouseGrabbed());
+        //? if >=26.3 {
+//        delta[0] = xrel;
+//        delta[1] = yrel;
+        //?}
 
         if (!shouldApplyMouseOverride()) return;
 
         var renderer = SpatialGUIClient.renderer();
         if (renderer == null) return;
 
-        double sourceX = SpatialGUIRenderer.isCrosshairModeActive()
-                ? mc.getWindow().getScreenWidth() / 2.0
-                : x;
-
-        double sourceY = SpatialGUIRenderer.isCrosshairModeActive()
-                ? mc.getWindow().getScreenHeight() / 2.0
-                : y;
-
-        Vector2d mouse = renderer.updateMousePosition(sourceX, sourceY);
-
         MouseHandlerAccessor mouseHandler = (MouseHandlerAccessor) this;
-        if (mouse == null) return;
-
-        double mappedX = mouse.x;
-        double mappedY = mouse.y;
 
         boolean ignoreFirstMove = mouseHandler.getIgnoreFirstMove();
         if (ignoreFirstMove) {
             mouseHandler.setIgnoreFirstMove(false);
-            deltaX = 0;
-            deltaY = 0;
+            delta[0] = 0;
+            delta[1] = 0;
         }
 
-        double oldX = mouseHandler.getRawXpos();
-        double oldY = mouseHandler.getRawYpos();
-
+        // free-look must track input even when the ray misses the quad, or
+        // turning past the screen edge deadlocks the camera
         if (SpatialGUIRenderer.isCrosshairModeActive() && !ignoreFirstMove) {
-            MouseHandlerUtil.addFreeLookDelta(deltaX, deltaY);
+            MouseHandlerUtil.addFreeLookDelta(delta[0], delta[1]);
         }
 
-        mouseHandler.setRawXpos(mappedX);
-        mouseHandler.setRawYpos(mappedY);
+        Vector2d mouse = renderer.updateMousePosition(
+                MouseHandlerUtil.getSourceX(), MouseHandlerUtil.getSourceY());
 
-        if (!ignoreFirstMove) {
-            mouseHandler.setAccumulatedDX(mouseHandler.getAccumulatedDX() + mappedX - oldX);
-            mouseHandler.setAccumulatedDY(mouseHandler.getAccumulatedDY() + mappedY - oldY);
+        if (mouse != null) {
+            double oldX = mouseHandler.getRawXpos();
+            double oldY = mouseHandler.getRawYpos();
+
+            mouseHandler.setRawXpos(mouse.x);
+            mouseHandler.setRawYpos(mouse.y);
+
+            if (!ignoreFirstMove) {
+                mouseHandler.setAccumulatedDX(mouseHandler.getAccumulatedDX() + mouse.x - oldX);
+                mouseHandler.setAccumulatedDY(mouseHandler.getAccumulatedDY() + mouse.y - oldY);
+            }
         }
 
         ci.cancel();

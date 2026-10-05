@@ -39,8 +39,10 @@ public abstract class CameraMixin {
     @Unique private static final float MAX_YAW_OFFSET = 90f;
     @Unique private static float smoothedCameraYaw, smoothedCameraPitch;
     @Unique private static float baseXRot;
-    @Unique private static long parallaxBlendStartMs;
-    @Unique private static final float PARALLAX_BLEND_MS = 150.0f;
+
+    @Unique private static float parallaxYawOffset, parallaxPitchOffset;
+    @Unique private static long lastParallaxNanos;
+    @Unique private static final float PARALLAX_TAU_MS = 50.0f;
 
     @Unique private static float freeLookYaw = 0f, freeLookPitch = 0f;
     @Unique private static boolean wasCrosshairMode;
@@ -70,8 +72,6 @@ public abstract class CameraMixin {
             MouseHandlerUtil.updateMouseGrabForFirstPerson(isFirstPerson);
 
             if (!wasCapturing) {
-                var mc = Minecraft.getInstance();
-                parallaxBlendStartMs = System.currentTimeMillis();
                 baseXRot = Math.max(-SpatialGUI.config.firstPersonPitchClamp, Math.min(SpatialGUI.config.firstPersonPitchClamp, xRot));
             }
 
@@ -151,12 +151,15 @@ public abstract class CameraMixin {
                 smoothedCameraYaw = freeLookYaw;
                 smoothedCameraPitch = entityXRot + freeLookPitch;
             } else if (SpatialGUI.config.disableFirstPersonParallax) {
-                smoothedCameraYaw = 0f;
-                smoothedCameraPitch = baseXRot;
+                this.smoothParallaxOffsets(0f, 0f);
+                smoothedCameraYaw = parallaxYawOffset;
+                smoothedCameraPitch = baseXRot + parallaxPitchOffset;
             } else {
-                float blend = Math.min(1.0f, (System.currentTimeMillis() - parallaxBlendStartMs) / PARALLAX_BLEND_MS);
-                smoothedCameraYaw = normX * MAX_YAW_OFFSET * (float) SpatialGUI.config.firstPersonMouseSensitivityYaw * blend;
-                smoothedCameraPitch = baseXRot + normY * 180f * (float) SpatialGUI.config.firstPersonMouseSensitivityPitch * blend;
+                this.smoothParallaxOffsets(
+                        normX * MAX_YAW_OFFSET * (float) SpatialGUI.config.firstPersonMouseSensitivityYaw,
+                        normY * 180f * (float) SpatialGUI.config.firstPersonMouseSensitivityPitch);
+                smoothedCameraYaw = parallaxYawOffset;
+                smoothedCameraPitch = baseXRot + parallaxPitchOffset;
             }
 
             smoothedCameraPitch = Math.max(-maxPitch, Math.min(maxPitch, smoothedCameraPitch));
@@ -165,12 +168,14 @@ public abstract class CameraMixin {
             positionYaw = yaw;
         } else {
             if (SpatialGUI.config.disableThirdPersonParallax) {
-                smoothedCameraYaw = 0f;
-                smoothedCameraPitch = 0f;
+                this.smoothParallaxOffsets(0f, 0f);
             } else {
-                smoothedCameraYaw = normX * MAX_YAW_OFFSET * (float) SpatialGUI.config.thirdPersonMouseSensitivityYaw;
-                smoothedCameraPitch = normY * 180f * (float) SpatialGUI.config.thirdPersonMouseSensitivityPitch;
+                this.smoothParallaxOffsets(
+                        normX * MAX_YAW_OFFSET * (float) SpatialGUI.config.thirdPersonMouseSensitivityYaw,
+                        normY * 180f * (float) SpatialGUI.config.thirdPersonMouseSensitivityPitch);
             }
+            smoothedCameraYaw = parallaxYawOffset;
+            smoothedCameraPitch = parallaxPitchOffset;
 
             yaw = entity.getYRot() + smoothedCameraYaw;
             pitch = (float) SpatialGUI.config.cameraTargetPitch + smoothedCameraPitch;
@@ -191,6 +196,16 @@ public abstract class CameraMixin {
         }
 
         return new CameraTransform(targetCamPos, yaw, pitch);
+    }
+
+    @Unique
+    private void smoothParallaxOffsets(float targetYaw, float targetPitch) {
+        long now = System.nanoTime();
+        float dt = lastParallaxNanos == 0 ? 0.016f : Math.min((now - lastParallaxNanos) / 1_000_000_000f, 0.1f);
+        lastParallaxNanos = now;
+        float alpha = 1f - (float) Math.exp(-dt / (PARALLAX_TAU_MS / 1000f));
+        parallaxYawOffset += (targetYaw - parallaxYawOffset) * alpha;
+        parallaxPitchOffset += (targetPitch - parallaxPitchOffset) * alpha;
     }
 
     @Unique
@@ -244,6 +259,9 @@ public abstract class CameraMixin {
         smoothedCameraPitch = 0f;
         freeLookYaw = 0f;
         freeLookPitch = 0f;
+        parallaxYawOffset = 0f;
+        parallaxPitchOffset = 0f;
+        lastParallaxNanos = 0;
         baseXRot = 0f;
         wasCrosshairMode = false;
         SpatialGUIClient.setSwitchedToFirstPersonDueToBlock(false);

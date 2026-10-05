@@ -17,28 +17,37 @@ import java.nio.DoubleBuffer;
 
 public class MouseHandlerUtil {
     private static boolean weGrabbedMouse = false;
-    private static double lastPosX = Double.NaN;
-    private static double lastPosY = Double.NaN;
-    private static double cachedSrcX = Double.NaN;
-    private static double cachedSrcY = Double.NaN;
-    private static Vector2d cachedMouse = null;
 
     private static double physicalX = Double.NaN;
     private static double physicalY = Double.NaN;
 
+    private static double lastPhysicalX = Double.NaN;
+    private static double lastPhysicalY = Double.NaN;
+
+    private static double mappedX = Double.NaN;
+    private static double mappedY = Double.NaN;
+
+    private static int heldHoverX = Integer.MIN_VALUE;
+    private static int heldHoverY = Integer.MIN_VALUE;
+    private static final double HOVER_DEADBAND_PX = 1.5;
+
+    private static double freeLookDeltaX = 0;
+    private static double freeLookDeltaY = 0;
+
     public static void resetMouseState() {
         Minecraft mc = Minecraft.getInstance();
-        lastPosX = Double.NaN;
-        lastPosY = Double.NaN;
-        cachedSrcX = Double.NaN;
-        cachedSrcY = Double.NaN;
-        cachedMouse = null;
+        mappedX = Double.NaN;
+        mappedY = Double.NaN;
+        heldHoverX = Integer.MIN_VALUE;
+        heldHoverY = Integer.MIN_VALUE;
         freeLookDeltaX = 0;
         freeLookDeltaY = 0;
 
         if (((MouseHandlerAccessor) mc.mouseHandler).getMouseGrabbed()) {
             physicalX = mc.getWindow().getScreenWidth() / 2.0;
             physicalY = mc.getWindow().getScreenHeight() / 2.0;
+            lastPhysicalX = physicalX;
+            lastPhysicalY = physicalY;
         } else {
             //? if >=26.3 {
             /*mc.mouseHandler.resyncMousePosition();
@@ -57,57 +66,34 @@ public class MouseHandlerUtil {
                 physicalY = y.get(0);
             }
             //?}
+            lastPhysicalX = physicalX;
+            lastPhysicalY = physicalY;
         }
     }
 
-    public static double getFallback(boolean isX) {
+    public static double[] captureMove(double x, double y, boolean mouseGrabbed) {
+        double[] delta = {x - lastPhysicalX, y - lastPhysicalY};
+        lastPhysicalX = x;
+        lastPhysicalY = y;
+        if (!mouseGrabbed) {
+            physicalX = x;
+            physicalY = y;
+        }
+        return delta;
+    }
+
+    public static double getSourceX() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.getWindow() != null) {
-            return isX ? mc.getWindow().getGuiScaledWidth() / 2.0 : mc.getWindow().getGuiScaledHeight() / 2.0;
-        }
-        return 0.0;
+        return SpatialGUIRenderer.isCrosshairModeActive()
+                ? mc.getWindow().getScreenWidth() / 2.0
+                : getPhysicalX(mc.getWindow().getScreenWidth() / 2.0);
     }
 
-    public static Vector2d getOrComputeMousePosition(double srcX, double srcY, QuadBasis quadBasis, CylinderBasis cylinderBasis, double guiScale, com.mojang.blaze3d.pipeline.TextureTarget target) {
-        if (!SpatialGUIRenderer.isCrosshairModeActive() && cachedMouse != null && srcX == cachedSrcX && srcY == cachedSrcY) {
-            return cachedMouse;
-        }
-        Vector2d mouse = cylinderBasis != null
-                ? RenderUtil.getInventoryMousePositionRayCurved(srcX, srcY, cylinderBasis)
-                : RenderUtil.getInventoryMousePositionRay(srcX, srcY, quadBasis, target);
-        if (mouse == null) {
-            return null;
-        }
-        cachedSrcX = srcX;
-        cachedSrcY = srcY;
-        cachedMouse = mouse;
-        lastPosX = mouse.x / guiScale;
-        lastPosY = mouse.y / guiScale;
-        return mouse;
-    }
-
-    public static double getLastPos(boolean isX, double fallback) {
-        double val = isX ? lastPosX : lastPosY;
-        if (Double.isNaN(val) || val <= -1000.0) {
-            return (Double.isNaN(fallback) || fallback <= -1000.0) ? getFallback(isX) : fallback;
-        }
-        return val;
-    }
-
-    public static double getLastPos(boolean isX) {
-        return getLastPos(isX, getFallback(isX));
-    }
-
-    public static void setPhysicalPos(double x, double y, boolean mouseGrabbed) {
-        if (mouseGrabbed) return;
-        physicalX = x;
-        physicalY = y;
-    }
-
-    public static void clearCachedMousePosition() {
-        cachedSrcX = Double.NaN;
-        cachedSrcY = Double.NaN;
-        cachedMouse = null;
+    public static double getSourceY() {
+        Minecraft mc = Minecraft.getInstance();
+        return SpatialGUIRenderer.isCrosshairModeActive()
+                ? mc.getWindow().getScreenHeight() / 2.0
+                : getPhysicalY(mc.getWindow().getScreenHeight() / 2.0);
     }
 
     public static double getPhysicalX(double fallback) {
@@ -118,8 +104,46 @@ public class MouseHandlerUtil {
         return Double.isNaN(physicalY) ? fallback : physicalY;
     }
 
-    private static double freeLookDeltaX = 0;
-    private static double freeLookDeltaY = 0;
+    public static Vector2d mapMousePosition(double srcX, double srcY, QuadBasis quadBasis, CylinderBasis cylinderBasis, double guiScale, com.mojang.blaze3d.pipeline.TextureTarget target) {
+        Vector2d mouse = cylinderBasis != null
+                ? RenderUtil.getInventoryMousePositionRayCurved(srcX, srcY, cylinderBasis)
+                : RenderUtil.getInventoryMousePositionRay(srcX, srcY, quadBasis, target);
+        if (mouse == null) {
+            return null;
+        }
+        mappedX = mouse.x / guiScale;
+        mappedY = mouse.y / guiScale;
+        return mouse;
+    }
+
+    public static double getFallback(boolean isX) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.getWindow() != null) {
+            return isX ? mc.getWindow().getGuiScaledWidth() / 2.0 : mc.getWindow().getGuiScaledHeight() / 2.0;
+        }
+        return 0.0;
+    }
+
+    public static double getLastPos(boolean isX, double fallback) {
+        double val = isX ? mappedX : mappedY;
+        return Double.isNaN(val) ? fallback : val;
+    }
+
+    public static double getLastPos(boolean isX) {
+        return getLastPos(isX, getFallback(isX));
+    }
+
+    public static int getHoverX() {
+        double v = getLastPos(true);
+        if (heldHoverX != Integer.MIN_VALUE && Math.abs(v - heldHoverX) < HOVER_DEADBAND_PX) return heldHoverX;
+        return heldHoverX = (int) v;
+    }
+
+    public static int getHoverY() {
+        double v = getLastPos(false);
+        if (heldHoverY != Integer.MIN_VALUE && Math.abs(v - heldHoverY) < HOVER_DEADBAND_PX) return heldHoverY;
+        return heldHoverY = (int) v;
+    }
 
     public static void addFreeLookDelta(double xrel, double yrel) {
         freeLookDeltaX += xrel;

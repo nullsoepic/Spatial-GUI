@@ -83,6 +83,7 @@ public class InventoryRenderer {
     private final TextureTargetManager targetManager;
     private QuadBasis quadBasis;
     private CylinderBasis cylinderBasis;
+    private long basisFrame = -1;
     private int meshQuadCount = 1;
     private static final int CURVED_SEGMENTS = 32;
     private long screenOpenTime = 0;
@@ -104,20 +105,22 @@ public class InventoryRenderer {
         this.targetManager = targetManager;
     }
 
-    public void updateQuadBasis() {
-        Minecraft client = Minecraft.getInstance();
-        var player = client.player;
-        if (player == null) return;
+    private record ScreenPose(float scale, float aspect) {}
 
+    public void updateQuadBasis() {
+        if (Minecraft.getInstance().player == null) return;
         boolean isFirstPerson = SpatialGUIClient.getEffectiveFirstPersonMode();
+        updateScreenBases(computeScreenPose(null, isFirstPerson), isFirstPerson);
+    }
+
+    private ScreenPose computeScreenPose(PoseStack matrices, boolean isFirstPerson) {
+        var player = Minecraft.getInstance().player;
         float yaw = player.getYRot();
-        //? if >=26.2 {
-        /*float pitch = isFirstPerson ? player.getXRot() : 0;
-        float pitchClamp = (float) SpatialGUI.config.firstPersonPitchClamp;
-        pitch = Math.clamp(pitch, -pitchClamp, pitchClamp);
-        *///?} else {
         float pitch = isFirstPerson ? player.getXRot() : 0;
         float pitchClamp = (float) SpatialGUI.config.firstPersonPitchClamp;
+        //? if >=26.2 {
+        /*pitch = Math.clamp(pitch, -pitchClamp, pitchClamp);
+        *///?} else {
         pitch = Math.max(-pitchClamp, Math.min(pitch, pitchClamp));
         //?}
         float yawRadians = (float) Math.toRadians(yaw);
@@ -131,30 +134,46 @@ public class InventoryRenderer {
 
         float scale = AnimationUtil.calculateAnimatedScale(config.scale(), screenOpenTime, isRecipeBookOpen, recipeBookCloseDelay);
 
+        if (matrices != null) {
+            RenderUtil.applyScreenTransform(matrices, isFirstPerson, yawRadians, pitchRadians, config, lookX, lookY, lookZ);
+            matrices.scale(scale, scale, scale);
+        }
+
         WORLD_POSE_STACK.setIdentity();
         RenderUtil.applyScreenTransform(WORLD_POSE_STACK, isFirstPerson, yawRadians, pitchRadians, config, lookX, lookY, lookZ);
         WORLD_POSE_STACK.scale(scale, scale, scale);
-        Matrix4f worldPose = WORLD_POSE_STACK.last().pose();
 
         var target = targetManager.getInventoryTarget();
         float aspect = target != null && target.height > 0
                 ? (float) target.width / (float) target.height
                 : 1.0f;
+        return new ScreenPose(scale, aspect);
+    }
 
-        quadBasis = RenderUtil.computeQuadBasis(worldPose, aspect, scale);
+    private void updateScreenBases(ScreenPose pose, boolean isFirstPerson) {
+        Matrix4f worldPose = WORLD_POSE_STACK.last().pose();
+        quadBasis = RenderUtil.computeQuadBasis(worldPose, pose.aspect(), pose.scale());
         cylinderBasis = isCurvedScreenActive(isFirstPerson)
-                ? RenderUtil.computeCylinderBasis(worldPose, aspect, scale, (float) Math.toRadians(SpatialGUI.config.curvedScreenArcDegrees))
+                ? RenderUtil.computeCylinderBasis(worldPose, pose.aspect(), pose.scale(), (float) Math.toRadians(SpatialGUI.config.curvedScreenArcDegrees))
                 : null;
     }
 
     public QuadBasis getQuadBasis() {
-        updateQuadBasis();
+        refreshBasisIfStale();
         return quadBasis;
     }
 
     public CylinderBasis getCylinderBasis() {
-        updateQuadBasis();
+        refreshBasisIfStale();
         return cylinderBasis;
+    }
+
+    private void refreshBasisIfStale() {
+        long frame = SpatialGUIRenderer.frameCounter();
+        if (basisFrame != frame) {
+            updateQuadBasis();
+            basisFrame = frame;
+        }
     }
 
     private static boolean isCurvedScreenActive(boolean isFirstPerson) {
@@ -257,42 +276,16 @@ public class InventoryRenderer {
 
         matrices.pushPose();
 
-        var player = client.player;
         boolean isFirstPerson = SpatialGUIClient.getEffectiveFirstPersonMode();
-        float yaw = player.getYRot();
-        float pitch = isFirstPerson ? player.getXRot() : 0;
-        float pitchClamp = (float) SpatialGUI.config.firstPersonPitchClamp;
-        pitch = Math.clamp(pitch, -pitchClamp, pitchClamp);
-        float yawRadians = (float) Math.toRadians(yaw);
-        float pitchRadians = (float) Math.toRadians(pitch);
-
-        RenderUtil.ScreenTransformConfig config = RenderUtil.getScreenTransformConfig(isFirstPerson);
-
-        double lookX = -Math.sin(yawRadians) * Math.cos(pitchRadians);
-        double lookY = -Math.sin(pitchRadians);
-        double lookZ = Math.cos(yawRadians) * Math.cos(pitchRadians);
-
-        RenderUtil.applyScreenTransform(matrices, isFirstPerson, yawRadians, pitchRadians, config, lookX, lookY, lookZ);
-
-        float scale = AnimationUtil.calculateAnimatedScale(config.scale(), screenOpenTime, isRecipeBookOpen, recipeBookCloseDelay);
+        ScreenPose screenPose = computeScreenPose(matrices, isFirstPerson);
         recipeBookCloseDelay = isRecipeBookOpen ? -2 : Math.min(0, recipeBookCloseDelay + 1);
-        matrices.scale(scale, scale, scale);
 
         Matrix4f pose = matrices.last().pose();
         VertexConsumer buffer = INVENTORY_BUFFER.getVertexBuilder(draw);
 
-        float aspect = (float) targetManager.getInventoryTarget().width / (float) targetManager.getInventoryTarget().height;
-        addScreenQuadMesh(buffer, pose, aspect, isFirstPerson);
+        addScreenQuadMesh(buffer, pose, screenPose.aspect(), isFirstPerson);
 
-        WORLD_POSE_STACK.setIdentity();
-        RenderUtil.applyScreenTransform(WORLD_POSE_STACK, isFirstPerson, yawRadians, pitchRadians, config, lookX, lookY, lookZ);
-        WORLD_POSE_STACK.scale(scale, scale, scale);
-        Matrix4f worldPose = WORLD_POSE_STACK.last().pose();
-
-        quadBasis = RenderUtil.computeQuadBasis(worldPose, aspect, scale);
-        cylinderBasis = isCurvedScreenActive(isFirstPerson)
-                ? RenderUtil.computeCylinderBasis(worldPose, aspect, scale, (float) Math.toRadians(SpatialGUI.config.curvedScreenArcDegrees))
-                : null;
+        updateScreenBases(screenPose, isFirstPerson);
 
         matrices.popPose();
 
@@ -399,45 +392,19 @@ public class InventoryRenderer {
 
         matrices.pushPose();
 
-        var player = client.player;
         boolean isFirstPerson = SpatialGUIClient.getEffectiveFirstPersonMode();
-        float yaw = player.getYRot();
-        float pitch = isFirstPerson ? player.getXRot() : 0;
-        float pitchClamp = (float) SpatialGUI.config.firstPersonPitchClamp;
-        pitch = Math.clamp(pitch, -pitchClamp, pitchClamp);
-        float yawRadians = (float) Math.toRadians(yaw);
-        float pitchRadians = (float) Math.toRadians(pitch);
-
-        RenderUtil.ScreenTransformConfig config = RenderUtil.getScreenTransformConfig(isFirstPerson);
-
-        double lookX = -Math.sin(yawRadians) * Math.cos(pitchRadians);
-        double lookY = -Math.sin(pitchRadians);
-        double lookZ = Math.cos(yawRadians) * Math.cos(pitchRadians);
-
-        RenderUtil.applyScreenTransform(matrices, isFirstPerson, yawRadians, pitchRadians, config, lookX, lookY, lookZ);
-
-        float scale = AnimationUtil.calculateAnimatedScale(config.scale(), screenOpenTime, isRecipeBookOpen, recipeBookCloseDelay);
+        ScreenPose screenPose = computeScreenPose(matrices, isFirstPerson);
         recipeBookCloseDelay = isRecipeBookOpen ? -2 : Math.min(0, recipeBookCloseDelay + 1);
-        matrices.scale(scale, scale, scale);
 
         Matrix4f pose = matrices.last().pose();
 
         BufferBuilder buffer = new BufferBuilder(INVENTORY_BYTE_BUFFER, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
-        float aspect = (float) targetManager.getInventoryTarget().width / (float) targetManager.getInventoryTarget().height;
-        addScreenQuadMesh(buffer, pose, aspect, isFirstPerson);
+        addScreenQuadMesh(buffer, pose, screenPose.aspect(), isFirstPerson);
 
         MeshData meshData = buffer.build();
 
-        WORLD_POSE_STACK.setIdentity();
-        RenderUtil.applyScreenTransform(WORLD_POSE_STACK, isFirstPerson, yawRadians, pitchRadians, config, lookX, lookY, lookZ);
-        WORLD_POSE_STACK.scale(scale, scale, scale);
-        Matrix4f worldPose = WORLD_POSE_STACK.last().pose();
-
-        quadBasis = RenderUtil.computeQuadBasis(worldPose, aspect, scale);
-        cylinderBasis = isCurvedScreenActive(isFirstPerson)
-                ? RenderUtil.computeCylinderBasis(worldPose, aspect, scale, (float) Math.toRadians(SpatialGUI.config.curvedScreenArcDegrees))
-                : null;
+        updateScreenBases(screenPose, isFirstPerson);
 
         matrices.popPose();
 
@@ -483,7 +450,9 @@ public class InventoryRenderer {
             try (var renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                     () -> "Spatial GUI",
                     output,
-                    java.util.OptionalInt.empty()
+                    java.util.OptionalInt.empty(),
+                    mainTarget.getDepthTextureView(),
+                    java.util.OptionalDouble.empty()
             )) {
                 renderPass.setPipeline(InventoryRenderer.INVENTORY_PIPELINE);
                 RenderSystem.bindDefaultUniforms(renderPass);
@@ -542,26 +511,9 @@ public class InventoryRenderer {
 
         matrices.pushPose();
 
-        var player = client.player;
         boolean isFirstPerson = SpatialGUIClient.getEffectiveFirstPersonMode();
-        float yaw = player.getYRot();
-        float pitch = isFirstPerson ? player.getXRot() : 0;
-        float pitchClamp = (float) SpatialGUI.config.firstPersonPitchClamp;
-        pitch = Math.max(-pitchClamp, Math.min(pitch, pitchClamp));
-        float yawRadians = (float) Math.toRadians(yaw);
-        float pitchRadians = (float) Math.toRadians(pitch);
-
-        RenderUtil.ScreenTransformConfig config = RenderUtil.getScreenTransformConfig(isFirstPerson);
-
-        double lookX = -Math.sin(yawRadians) * Math.cos(pitchRadians);
-        double lookY = -Math.sin(pitchRadians);
-        double lookZ = Math.cos(yawRadians) * Math.cos(pitchRadians);
-
-        RenderUtil.applyScreenTransform(matrices, isFirstPerson, yawRadians, pitchRadians, config, lookX, lookY, lookZ);
-
-        float scale = AnimationUtil.calculateAnimatedScale(config.scale(), screenOpenTime, isRecipeBookOpen, recipeBookCloseDelay);
+        ScreenPose screenPose = computeScreenPose(matrices, isFirstPerson);
         recipeBookCloseDelay = isRecipeBookOpen ? -2 : Math.min(0, recipeBookCloseDelay + 1);
-        matrices.scale(scale, scale, scale);
 
         Matrix4f pose = matrices.last().pose();
 
@@ -572,18 +524,9 @@ public class InventoryRenderer {
         buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         //?}
 
-        float aspect = (float) target.width / (float) target.height;
-        addScreenQuadMesh(buffer, pose, aspect, isFirstPerson);
+        addScreenQuadMesh(buffer, pose, screenPose.aspect(), isFirstPerson);
 
-        WORLD_POSE_STACK.setIdentity();
-        RenderUtil.applyScreenTransform(WORLD_POSE_STACK, isFirstPerson, yawRadians, pitchRadians, config, lookX, lookY, lookZ);
-        WORLD_POSE_STACK.scale(scale, scale, scale);
-        Matrix4f worldPose = WORLD_POSE_STACK.last().pose();
-
-        quadBasis = RenderUtil.computeQuadBasis(worldPose, aspect, scale);
-        cylinderBasis = isCurvedScreenActive(isFirstPerson)
-                ? RenderUtil.computeCylinderBasis(worldPose, aspect, scale, (float) Math.toRadians(SpatialGUI.config.curvedScreenArcDegrees))
-                : null;
+        updateScreenBases(screenPose, isFirstPerson);
 
         matrices.popPose();
 

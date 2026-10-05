@@ -68,6 +68,22 @@ public class SpatialGUIClient {
         return SpatialGUI.config.enabled;
     }
 
+    public static boolean shouldHideHud() {
+        return isEnabled() && SpatialGUI.config.hideHud
+                && renderer() != null && renderer().getHookedScreen() != null;
+    }
+
+    public static boolean shouldHideHotbar() {
+        return isEnabled() && SpatialGUI.config.hideHotbar
+                && renderer() != null && renderer().getHookedScreen() != null;
+    }
+
+    public static boolean shouldHideCrosshair() {
+        return isEnabled() && getEffectiveFirstPersonMode()
+                && !SpatialGUI.config.useCrosshairForFirstPerson
+                && renderer() != null && renderer().getHookedScreen() != null;
+    }
+
     public static boolean shouldHookScreen(Screen screen) {
         if (screen == null) return false;
 

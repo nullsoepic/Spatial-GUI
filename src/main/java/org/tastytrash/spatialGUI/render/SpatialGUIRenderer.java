@@ -25,6 +25,12 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 //?}
 
 public class SpatialGUIRenderer {
+
+    private static long frameCounter;
+
+    public static long frameCounter() {
+        return frameCounter;
+    }
     public static boolean isExtractingScreen = false;
     public static boolean skipWindowOverride = false;
 
@@ -192,6 +198,8 @@ public class SpatialGUIRenderer {
     }
 
     public void updateMousePosition() {
+        frameCounter++;
+
         if (!shouldCapture()) {
             return;
         }
@@ -200,16 +208,8 @@ public class SpatialGUIRenderer {
         MouseHandlerAccessor mouseHandler = (MouseHandlerAccessor) client.mouseHandler;
         boolean isFirstPerson = SpatialGUIClient.getEffectiveFirstPersonMode();
 
-        double sourceX = SpatialGUIRenderer.isCrosshairModeActive()
-                ? client.getWindow().getScreenWidth() / 2.0
-                : MouseHandlerUtil.getPhysicalX(mouseHandler.getRawXpos());
-        double sourceY = SpatialGUIRenderer.isCrosshairModeActive()
-                ? client.getWindow().getScreenHeight() / 2.0
-                : MouseHandlerUtil.getPhysicalY(mouseHandler.getRawYpos());
-
-        MouseHandlerUtil.clearCachedMousePosition();
-
-        Vector2d mappedMouse = updateMousePosition(sourceX, sourceY);
+        Vector2d mappedMouse = updateMousePosition(
+                MouseHandlerUtil.getSourceX(), MouseHandlerUtil.getSourceY());
 
         if (mappedMouse == null) {
             return;
@@ -229,7 +229,7 @@ public class SpatialGUIRenderer {
         }
 
         double guiScale = SpatialGUI.config.getEffectiveGuiScale(client.getWindow().getWidth(), client.getWindow().getHeight());
-        Vector2d mappedMouse = MouseHandlerUtil.getOrComputeMousePosition(
+        Vector2d mappedMouse = MouseHandlerUtil.mapMousePosition(
                 sourceX, sourceY, quadBasis, inventoryRenderer.getCylinderBasis(), guiScale,
                 targetManager.getInventoryTarget()
         );
