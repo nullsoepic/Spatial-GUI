@@ -32,6 +32,8 @@ public class AvatarRendererMixin {
 
         if (entity != client.player || !renderer.shouldCapture() || !SpatialGUIClient.isEnabled()) {
             renderer.headLockInitialized = false;
+            smoothedHeadYaw = 0f;
+            smoothedHeadPitch = 0f;
             return;
         }
 
@@ -97,6 +99,8 @@ public class AvatarRendererMixin {
 
         if (entity != client.player || !renderer.shouldCapture() || !SpatialGUIClient.isEnabled()) {
             renderer.headLockInitialized = false;
+            smoothedHeadYaw = 0f;
+            smoothedHeadPitch = 0f;
             original.call(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
             return;
         }

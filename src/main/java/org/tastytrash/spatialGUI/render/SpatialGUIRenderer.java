@@ -88,9 +88,7 @@ public class SpatialGUIRenderer {
             CameraUtil.checkBlockCollision(player);
         }
 
-        boolean isFirstPerson = (hookedScreen instanceof InventoryScreen
-            ? SpatialGUI.config.firstPersonModeInventory
-            : SpatialGUI.config.firstPersonModeContainers) || SpatialGUIClient.getSwitchedToFirstPersonDueToBlock();
+        boolean isFirstPerson = SpatialGUIClient.shouldUseFirstPersonMode(hookedScreen);
         SpatialGUIClient.setEffectiveFirstPersonMode(isFirstPerson);
         MouseHandlerUtil.resetMouseState();
         if (!isFirstPerson) {

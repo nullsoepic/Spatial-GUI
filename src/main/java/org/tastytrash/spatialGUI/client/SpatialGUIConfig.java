@@ -9,6 +9,12 @@ import java.util.List;
 
 @Config(name = "spatial-gui")
 public class SpatialGUIConfig implements ConfigData {
+    /**
+     * NEVER PUT ANYTHING BUT BOOLEANS IN COLLAPSIBLE MENUS
+     * CLOTH CONFIG BREAKS THEM
+     * Auto FOV Tuning is an exception because people are unlikely to touch it
+     */
+
     // general
     @ConfigEntry.Category("general")
     @ConfigEntry.Gui.Tooltip
@@ -24,6 +30,10 @@ public class SpatialGUIConfig implements ConfigData {
 
     @ConfigEntry.Category("general")
     @ConfigEntry.Gui.Tooltip
+    public boolean autoDetectCameraMode = false;
+
+    @ConfigEntry.Category("general")
+    @ConfigEntry.Gui.Tooltip
     public boolean autoCalculateGuiScale = true;
 
     @ConfigEntry.Category("general")
@@ -33,25 +43,32 @@ public class SpatialGUIConfig implements ConfigData {
 
     @ConfigEntry.Category("general")
     @ConfigEntry.Gui.Tooltip
-    public boolean autoScaleByFov = true;
-
-    @ConfigEntry.Category("general")
-    @ConfigEntry.Gui.Tooltip
     public boolean mirrorThirdPerson = false;
 
     @ConfigEntry.Category("general")
-    @ConfigEntry.Gui.Tooltip
-    public boolean hideHotbar = false;
+    @ConfigEntry.Gui.CollapsibleObject
+    public HUD hudOptions = new HUD();
+
+    public static class HUD {
+        @ConfigEntry.Category("general")
+        @ConfigEntry.Gui.Tooltip
+        public boolean hideHotbar = false;
+
+        @ConfigEntry.Category("general")
+        @ConfigEntry.Gui.Tooltip
+        public boolean hideHud = false;
+    }
 
     @ConfigEntry.Category("general")
     @ConfigEntry.Gui.Tooltip
-    public boolean hideHud = false;
+    public boolean autoScaleByFov = true;
 
     @ConfigEntry.Category("general")
     @ConfigEntry.Gui.CollapsibleObject
     public AutoFovTuning autoFovTuning = new AutoFovTuning();
 
     public static class AutoFovTuning {
+
         @ConfigEntry.Gui.Tooltip
         public double autoScaleBaselineFov = 70.0;
 
@@ -166,33 +183,22 @@ public class SpatialGUIConfig implements ConfigData {
     public int renderScalePercent = 100;
 
     @ConfigEntry.Category("rendering")
-    @ConfigEntry.Gui.Tooltip
-    public boolean useLinearFiltering = true;
+    @ConfigEntry.Gui.CollapsibleObject
+    public FirstPersonHands firstPersonHands = new FirstPersonHands();
 
-    @ConfigEntry.Category("rendering")
-    @ConfigEntry.Gui.Tooltip
-    public boolean useAnisotropicFiltering = true;
+    public static class FirstPersonHands {
+        @ConfigEntry.Category("rendering")
+        @ConfigEntry.Gui.Tooltip
+        public boolean hideHandsInFirstPerson = false;
 
-    @ConfigEntry.Category("rendering")
-    @ConfigEntry.Gui.Tooltip
-    public double recipeBookShrinkFactor = 1.5;
+        @ConfigEntry.Category("rendering")
+        @ConfigEntry.Gui.Tooltip
+        public boolean hideShieldInFirstPerson = true;
 
-    @ConfigEntry.Category("rendering")
-    @ConfigEntry.Gui.Tooltip
-    public boolean hideHandsInFirstPerson = false;
-
-    @ConfigEntry.Category("rendering")
-    @ConfigEntry.Gui.Tooltip
-    public boolean hideShieldInFirstPerson = true;
-
-    @ConfigEntry.Category("rendering")
-    @ConfigEntry.Gui.Tooltip
-    public boolean swingArmOnFirstPersonClick = false;
-
-    @ConfigEntry.Category("rendering")
-    @ConfigEntry.Gui.Tooltip
-    @ConfigEntry.BoundedDiscrete(min = 0, max = 255)
-    public int screenAlpha = 255;
+        @ConfigEntry.Category("rendering")
+        @ConfigEntry.Gui.Tooltip
+        public boolean swingArmOnFirstPersonClick = false;
+    }
 
     //? if >=26.1.2 {
     @ConfigEntry.Category("rendering")
@@ -204,6 +210,27 @@ public class SpatialGUIConfig implements ConfigData {
     @ConfigEntry.BoundedDiscrete(min = 1, max = 10)
     public int worldBlurStrength = 5;
     //?}
+
+    @ConfigEntry.Category("rendering")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.BoundedDiscrete(min = 0, max = 255)
+    public int screenAlpha = 255;
+
+    @ConfigEntry.Category("rendering")
+    @ConfigEntry.Gui.CollapsibleObject
+    public Filtering filtering = new Filtering();
+
+    public static class Filtering {
+        @ConfigEntry.Gui.Tooltip
+        public boolean useLinearFiltering = true;
+
+        @ConfigEntry.Gui.Tooltip
+        public boolean useAnisotropicFiltering = true;
+    }
+
+    @ConfigEntry.Category("rendering")
+    @ConfigEntry.Gui.Tooltip
+    public double recipeBookShrinkFactor = 1.5;
 
     // thirdPersonScreen
     @ConfigEntry.Category("thirdPersonScreen")
@@ -233,6 +260,15 @@ public class SpatialGUIConfig implements ConfigData {
     // firstPersonScreen
     @ConfigEntry.Category("firstPersonScreen")
     @ConfigEntry.Gui.Tooltip
+    public boolean curvedScreenEnabled = false;
+
+    @ConfigEntry.Category("firstPersonScreen")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.BoundedDiscrete(min = 5, max = 150)
+    public int curvedScreenArcDegrees = 30;
+
+    @ConfigEntry.Category("firstPersonScreen")
+    @ConfigEntry.Gui.Tooltip
     public double firstPersonScreenDistance = 1.5;
 
     @ConfigEntry.Category("firstPersonScreen")
@@ -255,15 +291,6 @@ public class SpatialGUIConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
     public double firstPersonScreenScale = 1.8;
 
-    @ConfigEntry.Category("firstPersonScreen")
-    @ConfigEntry.Gui.Tooltip
-    public boolean curvedScreenEnabled = false;
-
-    @ConfigEntry.Category("firstPersonScreen")
-    @ConfigEntry.Gui.Tooltip
-    @ConfigEntry.BoundedDiscrete(min = 5, max = 150)
-    public int curvedScreenArcDegrees = 30;
-
     // thirdPersonCamera
     @ConfigEntry.Category("thirdPersonCamera")
     @ConfigEntry.Gui.Tooltip
@@ -283,13 +310,23 @@ public class SpatialGUIConfig implements ConfigData {
 
     @ConfigEntry.Category("thirdPersonCamera")
     @ConfigEntry.Gui.Tooltip
-    @ConfigEntry.BoundedDiscrete(min = 1, max = 5000)
-    public int transitionDurationMs = 300;
+    public double thirdPersonMouseSensitivityYaw = 0.1;
 
     @ConfigEntry.Category("thirdPersonCamera")
     @ConfigEntry.Gui.Tooltip
-    @ConfigEntry.BoundedDiscrete(min = 0, max = 100)
-    public int transitionSkipPercentage = 15;
+    public double thirdPersonMouseSensitivityPitch = 0.03;
+
+    @ConfigEntry.Category("thirdPersonCamera")
+    @ConfigEntry.Gui.Tooltip
+    public boolean fallbackToFirstPersonOnBlockCollision = false;
+
+    @ConfigEntry.Category("thirdPersonCamera")
+    @ConfigEntry.Gui.Tooltip
+    public boolean disableThirdPersonParallax = false;
+
+    @ConfigEntry.Category("thirdPersonCamera")
+    @ConfigEntry.Gui.Tooltip
+    public boolean lerpCameraPitch = true;
 
     @ConfigEntry.Category("thirdPersonCamera")
     @ConfigEntry.Gui.Tooltip
@@ -301,28 +338,34 @@ public class SpatialGUIConfig implements ConfigData {
 
     @ConfigEntry.Category("thirdPersonCamera")
     @ConfigEntry.Gui.Tooltip
-    public double thirdPersonMouseSensitivityYaw = 0.1;
+    @ConfigEntry.BoundedDiscrete(min = 1, max = 5000)
+    public int transitionDurationMs = 300;
 
     @ConfigEntry.Category("thirdPersonCamera")
     @ConfigEntry.Gui.Tooltip
-    public double thirdPersonMouseSensitivityPitch = 0.03;
-
-    @ConfigEntry.Category("thirdPersonCamera")
-    @ConfigEntry.Gui.Tooltip
-    public boolean disableThirdPersonParallax = false;
-
-    @ConfigEntry.Category("thirdPersonCamera")
-    @ConfigEntry.Gui.Tooltip
-    public boolean lerpXRot = false;
-
-    @ConfigEntry.Category("thirdPersonCamera")
-    @ConfigEntry.Gui.Tooltip
-    public boolean fallbackToFirstPersonOnBlockCollision = false;
+    @ConfigEntry.BoundedDiscrete(min = 0, max = 100)
+    public int transitionSkipPercentage = 15;
 
     // firstPersonCamera
     @ConfigEntry.Category("firstPersonCamera")
     @ConfigEntry.Gui.Tooltip
     public boolean useCrosshairForFirstPerson = true;
+
+    @ConfigEntry.Category("firstPersonCamera")
+    @ConfigEntry.Gui.Tooltip
+    public boolean keepFirstPersonCameraAngle = true;
+
+    @ConfigEntry.Category("firstPersonCamera")
+    @ConfigEntry.Gui.Tooltip
+    public boolean inheritScreenOriginOnSwap = true;
+
+    @ConfigEntry.Category("firstPersonCamera")
+    @ConfigEntry.Gui.Tooltip
+    public double firstPersonMouseSensitivityYaw = 0.4;
+
+    @ConfigEntry.Category("firstPersonCamera")
+    @ConfigEntry.Gui.Tooltip
+    public double firstPersonMouseSensitivityPitch = 0.12;
 
     @ConfigEntry.Category("firstPersonCamera")
     @ConfigEntry.Gui.Tooltip
@@ -335,23 +378,7 @@ public class SpatialGUIConfig implements ConfigData {
 
     @ConfigEntry.Category("firstPersonCamera")
     @ConfigEntry.Gui.Tooltip
-    public double firstPersonMouseSensitivityYaw = 0.4;
-
-    @ConfigEntry.Category("firstPersonCamera")
-    @ConfigEntry.Gui.Tooltip
-    public double firstPersonMouseSensitivityPitch = 0.12;
-
-    @ConfigEntry.Category("firstPersonCamera")
-    @ConfigEntry.Gui.Tooltip
     public boolean disableFirstPersonParallax = false;
-
-    @ConfigEntry.Category("firstPersonCamera")
-    @ConfigEntry.Gui.Tooltip
-    public boolean keepFirstPersonCameraAngle = true;
-
-    @ConfigEntry.Category("firstPersonCamera")
-    @ConfigEntry.Gui.Tooltip
-    public boolean inheritScreenOriginOnSwap = true;
 
     // animations
     @ConfigEntry.Category("animations")

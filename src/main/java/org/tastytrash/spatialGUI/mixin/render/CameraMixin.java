@@ -2,6 +2,7 @@ package org.tastytrash.spatialGUI.mixin.render;
 
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.Vec3;
@@ -65,9 +66,7 @@ public abstract class CameraMixin {
 
         if (isCapturing && this.entity != null && SpatialGUIClient.isEnabled()) {
             TRANSITION_DURATION_MS = SpatialGUI.config.transitionDurationMs;
-            boolean isFirstPerson = (SpatialGUIRenderer.isInventoryScreen()
-                ? SpatialGUI.config.firstPersonModeInventory
-                : SpatialGUI.config.firstPersonModeContainers) || SpatialGUIClient.getSwitchedToFirstPersonDueToBlock();
+            boolean isFirstPerson = SpatialGUIClient.shouldUseFirstPersonMode(renderer.getHookedScreen());
             SpatialGUIClient.setEffectiveFirstPersonMode(isFirstPerson);
             MouseHandlerUtil.updateMouseGrabForFirstPerson(isFirstPerson);
 
@@ -246,7 +245,7 @@ public abstract class CameraMixin {
 
             position = new Vec3(MathUtil.lerp(startPos.x, newTargetPos.x, easedProgress), MathUtil.lerp(startPos.y, newTargetPos.y, easedProgress), MathUtil.lerp(startPos.z, newTargetPos.z, easedProgress));
             yRot = progress >= 1.0f ? newTargetYRot : MathUtil.rotLerp(startYRot, newTargetYRot, easedProgress);
-            xRot = SpatialGUI.config.lerpXRot ? (progress >= 1.0f ? newTargetXRot : MathUtil.lerp(startXRot, newTargetXRot, easedProgress)) : newTargetXRot;
+            xRot = (SpatialGUI.config.lerpCameraPitch && SpatialGUIClient.getWasThirdPersonCamera() && progress < 1.0f) ? MathUtil.lerp(startXRot, newTargetXRot, easedProgress) : newTargetXRot;
         }
     }
 
@@ -264,6 +263,7 @@ public abstract class CameraMixin {
         lastParallaxNanos = 0;
         baseXRot = 0f;
         wasCrosshairMode = false;
+        SpatialGUIClient.setWasThirdPersonCamera(false);
         SpatialGUIClient.setSwitchedToFirstPersonDueToBlock(false);
         SpatialGUIClient.setEffectiveFirstPersonMode(false);
         MouseHandlerUtil.updateMouseGrabForFirstPerson(false);

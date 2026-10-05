@@ -30,6 +30,7 @@ public class SpatialGUIClient {
     private static SpatialGUIRenderer renderer;
     private static boolean effectiveFirstPersonMode = false;
     private static boolean switchedToFirstPersonDueToBlock = false;
+    private static boolean wasThirdPersonCamera = false;
 
     //? if fabric {
     @Override
@@ -69,12 +70,12 @@ public class SpatialGUIClient {
     }
 
     public static boolean shouldHideHud() {
-        return isEnabled() && SpatialGUI.config.hideHud
+        return isEnabled() && SpatialGUI.config.hudOptions.hideHud
                 && renderer() != null && renderer().getHookedScreen() != null;
     }
 
     public static boolean shouldHideHotbar() {
-        return isEnabled() && SpatialGUI.config.hideHotbar
+        return isEnabled() && SpatialGUI.config.hudOptions.hideHotbar
                 && renderer() != null && renderer().getHookedScreen() != null;
     }
 
@@ -137,5 +138,25 @@ public class SpatialGUIClient {
 
     public static void setSwitchedToFirstPersonDueToBlock(boolean value) {
         switchedToFirstPersonDueToBlock = value;
+    }
+
+    public static boolean getWasThirdPersonCamera() {
+        return wasThirdPersonCamera;
+    }
+
+    public static void setWasThirdPersonCamera(boolean value) {
+        wasThirdPersonCamera = value;
+    }
+
+    public static boolean shouldUseFirstPersonMode(Screen screen) {
+        if (SpatialGUI.config.autoDetectCameraMode) {
+            var client = Minecraft.getInstance();
+            return client.options.getCameraType() == net.minecraft.client.CameraType.FIRST_PERSON;
+        } else {
+            boolean isInventoryScreen = screen instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen
+                || screen.getClass().getName().contains("InventoryScreen");
+            return (isInventoryScreen ? SpatialGUI.config.firstPersonModeInventory : SpatialGUI.config.firstPersonModeContainers)
+                || switchedToFirstPersonDueToBlock;
+        }
     }
 }

@@ -319,7 +319,7 @@ public class InventoryRenderer {
                 IDENTITY_MATRIX
         );
 
-        FilterMode filterMode = SpatialGUI.config.useLinearFiltering ? FilterMode.LINEAR : FilterMode.NEAREST;
+        FilterMode filterMode = SpatialGUI.config.filtering.useLinearFiltering ? FilterMode.LINEAR : FilterMode.NEAREST;
 
         try (var renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
                 () -> "Spatial GUI",
@@ -342,7 +342,7 @@ public class InventoryRenderer {
                     //?}
                             ("Sampler0", texture, RenderSystem.getSamplerCache().getSampler(
                                     AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE,
-                                    filterMode, filterMode, SpatialGUI.config.useAnisotropicFiltering
+                                    filterMode, filterMode, SpatialGUI.config.filtering.useAnisotropicFiltering
                             ));
             renderPass.setVertexBuffer(0, info.vertexBuffer().slice());
             renderPass.setIndexBuffer(info.indexBuffer(), info.indexType());
@@ -436,7 +436,7 @@ public class InventoryRenderer {
                 IDENTITY_MATRIX
         );
 
-        FilterMode filterMode = SpatialGUI.config.useLinearFiltering ? FilterMode.LINEAR : FilterMode.NEAREST;
+        FilterMode filterMode = SpatialGUI.config.filtering.useLinearFiltering ? FilterMode.LINEAR : FilterMode.NEAREST;
 
         var sequentialBuffer = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
         GpuBuffer indexBuffer = sequentialBuffer.getBuffer(meshQuadCount * 6);
@@ -459,7 +459,7 @@ public class InventoryRenderer {
                 renderPass.setUniform("DynamicTransforms", dynamicTransforms);
                 renderPass.bindTexture("Sampler0", texture, RenderSystem.getSamplerCache().getSampler(
                         AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE,
-                        filterMode, filterMode, SpatialGUI.config.useAnisotropicFiltering
+                        filterMode, filterMode, SpatialGUI.config.filtering.useAnisotropicFiltering
                 ));
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);
@@ -548,7 +548,7 @@ public class InventoryRenderer {
                 ? Math.min(1.0F, (System.currentTimeMillis() - screenOpenTime) / (float) SpatialGUI.config.fadeDurationMs)
                 : 1.0F;
 
-        int filter = SpatialGUI.config.useLinearFiltering ? GL11.GL_LINEAR : GL11.GL_NEAREST;
+        int filter = SpatialGUI.config.filtering.useLinearFiltering ? GL11.GL_LINEAR : GL11.GL_NEAREST;
 
         client.getMainRenderTarget().bindWrite(true);
 

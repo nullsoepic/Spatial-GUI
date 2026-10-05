@@ -27,7 +27,6 @@ public class InputConstantsMixin {
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return false;
-        if (!mc.options.getCameraType().isFirstPerson()) return false;
 
         //? if >=26.2 {
         /*Screen screen = mc.gui.screen();
@@ -36,10 +35,7 @@ public class InputConstantsMixin {
         //?}
         if (screen == null || !SpatialGUIClient.shouldHookScreen(screen)) return false;
 
-        boolean isFirstPersonGui = (screen instanceof InventoryScreen
-                ? SpatialGUI.config.firstPersonModeInventory
-                : SpatialGUI.config.firstPersonModeContainers) || SpatialGUIClient.getSwitchedToFirstPersonDueToBlock();
-        return isFirstPersonGui;
+        return SpatialGUIClient.shouldUseFirstPersonMode(screen);
     }
 
     //? if <=1.21.1 {
