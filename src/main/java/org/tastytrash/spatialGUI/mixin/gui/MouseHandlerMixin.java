@@ -80,8 +80,8 @@ public class MouseHandlerMixin {
 
     @Inject(method = "onMove", at = @At("HEAD"), cancellable = true)
     //? if >=26.3 {
-//    private void spatialGUI$onMove(long handle, double x, double y, double xrel, double yrel, CallbackInfo ci) {
-    //?} else {
+    /*private void spatialGUI$onMove(long handle, double x, double y, double xrel, double yrel, CallbackInfo ci) {
+    *///?} else {
     private void spatialGUI$onMove(long handle, double x, double y, CallbackInfo ci) {
     //?}
         Minecraft mc = Minecraft.getInstance();
