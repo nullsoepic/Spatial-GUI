@@ -56,15 +56,20 @@ public class CameraUtil {
         return targetCamPos;
     }
 
+    public static float getCurrentFov() {
+        //? if >26.2 {
+        /*return Minecraft.getInstance().gameRenderer.getMainCamera().getFov();
+        *///?} else {
+        return SpatialGUI.config.overrideFov
+                ? (float) SpatialGUI.config.targetFov
+                : (float) (int) Minecraft.getInstance().options.fov().get();
+        //?}
+    }
+
     public static float calculateFovMultiplier() {
         if (!SpatialGUI.config.autoScaleByFov) return 1.0f;
 
-        //? if >26.2 {
-        /*float currentFov = Minecraft.getInstance().gameRenderer.getMainCamera().getFov();
-        *///?} else {
-        float currentFov = (float) (int) Minecraft.getInstance().options.fov().get();
-        //?}
-
+        float currentFov = getCurrentFov();
         float baselineFov = (float) SpatialGUI.config.autoFovTuning.autoScaleBaselineFov;
 
         return currentFov / baselineFov;

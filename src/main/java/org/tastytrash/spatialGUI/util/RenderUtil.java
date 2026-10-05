@@ -64,17 +64,22 @@ public final class RenderUtil {
 
     private static float calculateFovScaleMultiplier(boolean autoScaleByFov) {
         if (!autoScaleByFov) return 1.0f;
-        
+
+        float currentFov;
         //? if >=26.1.2 {
-        float currentFov = Minecraft.getInstance().gameRenderer.getMainCamera().getFov();
+        currentFov = Minecraft.getInstance().gameRenderer.getMainCamera().getFov();
         //?} else {
-        /*float currentFov = (float) ((GameRendererInvoker) Minecraft.getInstance().gameRenderer)
-                .spatialGUI$getFov(Minecraft.getInstance().gameRenderer.getMainCamera(),
-                        //? if >1.20.1 {
-                        Minecraft.getInstance().gameRenderer.getMainCamera().getPartialTickTime(), true);
-                        //?} else {
-                        /^Minecraft.getInstance().getFrameTime(), true);
-                        ^///?}
+        /*if (SpatialGUI.config.overrideFov) {
+            currentFov = (float) SpatialGUI.config.targetFov;
+        } else {
+            currentFov = (float) ((GameRendererInvoker) Minecraft.getInstance().gameRenderer)
+                    .spatialGUI$getFov(Minecraft.getInstance().gameRenderer.getMainCamera(),
+                            //? if >1.20.1 {
+                            Minecraft.getInstance().gameRenderer.getMainCamera().getPartialTickTime(), true);
+                            //?} else {
+                            /^Minecraft.getInstance().getFrameTime(), true);
+                            ^///?}
+        }
         *///?}
         float baselineFov = (float) SpatialGUI.config.autoFovTuning.autoScaleBaselineFov;
         float power = (float) SpatialGUI.config.autoFovTuning.autoScaleScreenPower;

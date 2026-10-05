@@ -3,9 +3,11 @@ package org.tastytrash.spatialGUI.mixin.render;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.platform.Lighting;
+import net.minecraft.client.Camera;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.util.Mth;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.tastytrash.spatialGUI.SpatialGUI;
 import org.tastytrash.spatialGUI.client.SpatialGUIClient;
 import org.tastytrash.spatialGUI.render.SpatialGUIRenderer;
-import org.tastytrash.spatialGUI.render.WorldBlurRenderer;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 
 //? if >1.21.1 {
 import net.minecraft.client.renderer.fog.FogRenderer;
@@ -33,6 +35,7 @@ import static com.mojang.blaze3d.platform.Lighting.Entry.LEVEL;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.state.GameRenderState;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import org.tastytrash.spatialGUI.render.WorldBlurRenderer;
 
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
@@ -240,7 +243,10 @@ public abstract class GameRendererMixin {
     @Inject(method = "render", at = @At("HEAD"))
     private void spatialGUI$prepareTargetEarly(CallbackInfo ci) {
         var renderer = SpatialGUIClient.renderer();
-        if (renderer.shouldCapture() && SpatialGUIClient.isEnabled()) {
+        if (renderer != null) {
+            renderer.updateFovProgress();
+        }
+        if (renderer != null && renderer.shouldCapture() && SpatialGUIClient.isEnabled()) {
             renderer.prepareTarget();
             renderer.onFrameStart();
         }
@@ -437,7 +443,10 @@ public abstract class GameRendererMixin {
     @Inject(method = "render", at = @At("HEAD"))
     private void spatialGUI$prepareTargetEarly(CallbackInfo ci) {
         var renderer = SpatialGUIClient.renderer();
-        if (renderer.shouldCapture() && SpatialGUIClient.isEnabled()) {
+        if (renderer != null) {
+            renderer.updateFovProgress();
+        }
+        if (renderer != null && renderer.shouldCapture() && SpatialGUIClient.isEnabled()) {
             renderer.prepareTarget();
             renderer.onFrameStart();
         }
@@ -515,6 +524,18 @@ public abstract class GameRendererMixin {
         }
     }
     ^///?}
+    @ModifyReturnValue(method = "getFov", at = @At("RETURN"))
+    private float spatialGUI$overrideFov(float original, Camera camera, float partialTick, boolean useFovSetting) {
+        if (!useFovSetting) return original;
+
+        var renderer = SpatialGUIClient.renderer();
+        if (renderer == null) return original;
+
+        float factor = renderer.getFovOverrideFactor();
+        if (factor <= 0f) return original;
+
+        return Mth.lerp(factor, original, (float) SpatialGUI.config.targetFov);
+    }
 
     @Inject(method = "render", at = @At("HEAD"))
     private void spatialGUI$refreshMousePosition(CallbackInfo ci) {
@@ -548,10 +569,26 @@ public abstract class GameRendererMixin {
 *///?} else {
 /*@Mixin(value = GameRenderer.class, priority = 1100)
 public class GameRendererMixin {
+    @ModifyReturnValue(method = "getFov", at = @At("RETURN"))
+    private double spatialGUI$overrideFov(double original, Camera camera, float partialTick, boolean useFovSetting) {
+        if (!useFovSetting) return original;
+
+        var renderer = SpatialGUIClient.renderer();
+        if (renderer == null) return original;
+
+        float factor = renderer.getFovOverrideFactor();
+        if (factor <= 0f) return original;
+
+        return Mth.lerp(factor, original, SpatialGUI.config.targetFov);
+    }
+
     @Inject(method = "render", at = @At("HEAD"))
     private void spatialGUI$prepareTargetEarly(CallbackInfo ci) {
         var renderer = SpatialGUIClient.renderer();
-        if (renderer.shouldCapture() && SpatialGUIClient.isEnabled()) {
+        if (renderer != null) {
+            renderer.updateFovProgress();
+        }
+        if (renderer != null && renderer.shouldCapture() && SpatialGUIClient.isEnabled()) {
             renderer.prepareTarget();
             renderer.onFrameStart();
         }

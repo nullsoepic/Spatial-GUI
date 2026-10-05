@@ -94,9 +94,9 @@ public class MouseHandlerMixin {
 
         double[] delta = MouseHandlerUtil.captureMove(x, y, ((MouseHandlerAccessor) this).getMouseGrabbed());
         //? if >=26.3 {
-//        delta[0] = xrel;
-//        delta[1] = yrel;
-        //?}
+        /*delta[0] = xrel;
+        delta[1] = yrel;
+        *///?}
 
         if (!shouldApplyMouseOverride()) return;
 

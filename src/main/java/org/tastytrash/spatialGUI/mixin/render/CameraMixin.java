@@ -1,5 +1,6 @@
 package org.tastytrash.spatialGUI.mixin.render;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -50,6 +51,17 @@ public abstract class CameraMixin {
 
     @Unique
     private record CameraTransform(Vec3 pos, float yaw, float pitch) {}
+
+    //? if >=26.1.2 {
+    @ModifyReturnValue(method = "calculateFov", at = @At("RETURN"))
+    private float spatialGUI$overrideFov(float original) {
+        var renderer = SpatialGUIClient.renderer();
+        if (renderer == null) return original;
+        float factor = renderer.getFovOverrideFactor();
+        if (factor <= 0f) return original;
+        return MathUtil.lerp(original, SpatialGUI.config.targetFov, factor);
+    }
+    //?}
 
     //? if >=26.1.2 {
     @Inject(method = "alignWithEntity", at = @At("TAIL"))

@@ -14,17 +14,17 @@ import org.tastytrash.spatialGUI.SpatialGUI;
 import org.tastytrash.spatialGUI.client.SpatialGUIClient;
 
 //? if >1.20.1 && <26.1.2 {
-//import net.minecraft.client.gui.GuiGraphics;
-//import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-//import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-//?}
+/*import net.minecraft.client.gui.GuiGraphics;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+*///?}
 
 
 @Mixin(Screen.class)
 public class ScreenMixin {
     //? if neoforge {
-//    @Inject(method = "added", at = @At("HEAD"))
-    //?} else {
+    /*@Inject(method = "added", at = @At("HEAD"))
+    *///?} else {
     @Inject(method = "init()V", at = @At("HEAD"))
     //?}
     private void spatialGUI$hookOnShow(CallbackInfo ci) {

@@ -44,6 +44,8 @@ public class SpatialGUIRenderer {
     private float cameraStartYRot;
     private static boolean wasTrue;
     public boolean headLockInitialized = false;
+    private float fovProgress = 0f;
+    private long lastFovUpdateNano = 0L;
 
     private boolean pendingCameraSnap = false;
     private float pendingSnapYaw;
@@ -284,6 +286,10 @@ public class SpatialGUIRenderer {
         return cameraStartYRot;
     }
 
+    public float getFovOverrideFactor() {
+        return fovProgress;
+    }
+
     public static boolean isInventoryScreen() {
         return isInventoryScreen;
     }
@@ -327,6 +333,39 @@ public class SpatialGUIRenderer {
 
     public void onFrameStart() {
         inventoryRenderer.onFrameStart();
+    }
+
+    public void updateFovProgress() {
+        var mc = Minecraft.getInstance();
+        if (mc.level == null) {
+            fovProgress = 0f;
+            lastFovUpdateNano = 0L;
+            return;
+        }
+
+        //? if >=26.2 {
+        /*Screen current = mc.gui.screen();
+        *///?} else {
+        Screen current = mc.screen;
+        //?}
+        boolean active = current != null && current == hookedScreen && SpatialGUIClient.shouldHookScreen(current);
+        float target = (active && SpatialGUI.config.overrideFov) ? 1f : 0f;
+        float speed = SpatialGUI.config.fovLerpSpeed;
+
+        if (speed <= 0f) {
+            fovProgress = target;
+            lastFovUpdateNano = 0L;
+            return;
+        }
+
+        long now = System.nanoTime();
+        float dt = lastFovUpdateNano == 0L ? 0f : Math.min((now - lastFovUpdateNano) / 1000000000f, 0.1f);
+        lastFovUpdateNano = now;
+
+        float alpha = 1f - (float) Math.exp(-dt * speed);
+        fovProgress += (target - fovProgress) * alpha;
+
+        if (Math.abs(target - fovProgress) < 0.001f) fovProgress = target;
     }
 
     //? if >1.21.1 {

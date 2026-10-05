@@ -419,4 +419,19 @@ public class SpatialGUIConfig implements ConfigData {
     @ConfigEntry.BoundedDiscrete(min = 1, max = 100)
     public int animationStartScalePercent = 75;
 
+    // fov
+    @ConfigEntry.Category("fov")
+    @ConfigEntry.Gui.Tooltip
+    public boolean overrideFov = false;
+
+    @ConfigEntry.Category("fov")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.BoundedDiscrete(min = 30, max = 110)
+    public int targetFov = 70;
+
+    @ConfigEntry.Category("fov")
+    @ConfigEntry.Gui.Tooltip
+    @ConfigEntry.BoundedDiscrete(min = 0, max = 50)
+    public int fovLerpSpeed = 10;
+
 }

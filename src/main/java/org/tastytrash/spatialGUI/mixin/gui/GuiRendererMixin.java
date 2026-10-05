@@ -25,7 +25,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.tastytrash.spatialGUI.SpatialGUI;
 import org.tastytrash.spatialGUI.client.SpatialGUIClient;
 import org.tastytrash.spatialGUI.render.ScreenExtractor;
-import org.tastytrash.spatialGUI.render.SpatialGUIRenderer;import java.util.List;
+import org.tastytrash.spatialGUI.render.SpatialGUIRenderer;
+import java.util.List;
 
 @Mixin(GuiRenderer.class)
 public class GuiRendererMixin {
@@ -59,9 +60,9 @@ public class GuiRendererMixin {
     private void spatialGUI$capturePip(
             GuiRenderState renderState,
             //? if <26.2 {
-            /^MultiBufferSource.BufferSource bufferSource,
+            MultiBufferSource.BufferSource bufferSource,
             SubmitNodeCollector submitNodeCollector,
-            ^///?}
+            //?}
             FeatureRenderDispatcher featureRenderDispatcher,
             List pipRendererFactories,
             CallbackInfo ci) {
