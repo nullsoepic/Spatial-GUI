@@ -15,6 +15,15 @@ import org.tastytrash.spatialGUI.client.SpatialGUIClient;
 
 @Mixin(Screen.class)
 public class ScreenMixin {
+    @Inject(method = "added", at = @At("HEAD"))
+    private void spatialGUI$hookOnShow(CallbackInfo ci) {
+        Screen screen = (Screen) (Object) this;
+        var renderer = SpatialGUIClient.renderer();
+        if (renderer != null && SpatialGUIClient.shouldHookScreen(screen)) {
+            renderer.hookScreen(screen);
+        }
+    }
+
     //? if >=26.1.2 {
     @Inject(method = "extractBackground", at = @At("HEAD"), cancellable = true)
     private void spatialGUI$removeBackground(CallbackInfo ci) {
