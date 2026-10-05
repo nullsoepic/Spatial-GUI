@@ -48,7 +48,11 @@ public class MouseHandlerUtil {
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 DoubleBuffer x = stack.mallocDouble(1);
                 DoubleBuffer y = stack.mallocDouble(1);
+                //? if >1.21.1 {
                 GLFW.glfwGetCursorPos(mc.getWindow().handle(), x, y);
+                //?} else {
+                /*GLFW.glfwGetCursorPos(mc.getWindow().getWindow(), x, y);
+                *///?}
                 physicalX = x.get(0);
                 physicalY = y.get(0);
             }

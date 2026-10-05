@@ -2,7 +2,8 @@ __________ FIXES _________________
 ================================
 -------- HIGH PRIORITY ---------------
 
-First mouse movement causing snapping
+Still small jump in first person crosshair on <=1.21.1,
+not updating the mouse pos properly like other versions
 
 Sort mixin files into more different packages (when a PR isn't currently open)
 

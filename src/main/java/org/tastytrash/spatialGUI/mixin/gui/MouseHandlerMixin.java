@@ -1,11 +1,14 @@
 package org.tastytrash.spatialGUI.mixin.gui;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.gui.screens.Screen;
 import org.joml.Vector2d;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,6 +20,11 @@ import org.tastytrash.spatialGUI.util.MouseHandlerUtil;
 
 @Mixin(value = MouseHandler.class, priority = 1100)
 public class MouseHandlerMixin {
+
+    //? if <=1.21.1 {
+    /*@Shadow private double accumulatedDX;
+    @Shadow private double accumulatedDY;
+    *///?}
 
     @Unique private static double lastPhysicalX;
     @Unique private static double lastPhysicalY;
@@ -35,6 +43,7 @@ public class MouseHandlerMixin {
         return renderer != null && SpatialGUIClient.shouldHookScreen(renderer.getHookedScreen());
     }
 
+    //? if >1.21.1 {
     @ModifyReturnValue(method = "getScaledXPos(Lcom/mojang/blaze3d/platform/Window;)D", at = @At("RETURN"))
     private double spatialGUI$overrideScaledX(double original) {
         return shouldApplyMouseOverride() ? MouseHandlerUtil.getLastPos(true, original) : original;
@@ -44,16 +53,43 @@ public class MouseHandlerMixin {
     private double spatialGUI$overrideScaledY(double original) {
         return shouldApplyMouseOverride() ? MouseHandlerUtil.getLastPos(false, original) : original;
     }
+    //?} else {
+    /*@Unique
+    private static double spatialGUI$toRaw(boolean x, double scaled) {
+        var w = Minecraft.getInstance().getWindow();
+        return x ? scaled * w.getScreenWidth()  / (double) w.getGuiScaledWidth()
+                : scaled * w.getScreenHeight() / (double) w.getGuiScaledHeight();
+    }
 
+    @ModifyExpressionValue(method = {"onPress", "onScroll", "handleAccumulatedMovement"},
+            at = @At(value = "FIELD", target = "Lnet/minecraft/client/MouseHandler;xpos:D"))
+    private double spatialGUI$overrideX(double original) {
+        return shouldApplyMouseOverride()
+                ? spatialGUI$toRaw(true, MouseHandlerUtil.getLastPos(true, original))
+                : original;
+    }
+
+    @ModifyExpressionValue(method = {"onPress", "onScroll", "handleAccumulatedMovement"},
+            at = @At(value = "FIELD", target = "Lnet/minecraft/client/MouseHandler;ypos:D"))
+    private double spatialGUI$overrideY(double original) {
+        return shouldApplyMouseOverride()
+                ? spatialGUI$toRaw(false, MouseHandlerUtil.getLastPos(false, original))
+                : original;
+    }
+    *///?}
+
+    @Inject(method = "onMove", at = @At("HEAD"), cancellable = true)
     //? if >=26.3 {
-    /*@Inject(method = "onMove", at = @At("HEAD"), cancellable = true)
-    private void spatialGUI$onMove(long handle, double x, double y, double xrel, double yrel, CallbackInfo ci) {
-    *///?} else {
-    @Inject(method = "onMove(JDD)V", at = @At("HEAD"), cancellable = true)
+//    private void spatialGUI$onMove(long handle, double x, double y, double xrel, double yrel, CallbackInfo ci) {
+    //?} else {
     private void spatialGUI$onMove(long handle, double x, double y, CallbackInfo ci) {
     //?}
         Minecraft mc = Minecraft.getInstance();
+        //? if >1.21.1 {
         if (handle != mc.getWindow().handle()) {
+        //?} else {
+        /*if (handle != mc.getWindow().getWindow()) {
+        *///?}
             ci.cancel();
             return;
         }
@@ -118,7 +154,9 @@ public class MouseHandlerMixin {
     *///?}
         if (SpatialGUIRenderer.isCrosshairModeActive()) {
             //? if <=1.21.1 {
-            /*MouseHandlerUtil.addFreeLookDelta(this.accumulatedDX, this.accumulatedDY);
+            /*if (!shouldApplyMouseOverride()) {
+                MouseHandlerUtil.addFreeLookDelta(this.accumulatedDX, this.accumulatedDY);
+            }
             this.accumulatedDX = 0.0;
             this.accumulatedDY = 0.0;
             *///?}

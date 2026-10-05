@@ -1,5 +1,9 @@
 package org.tastytrash.spatialGUI.mixin.render;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.mojang.blaze3d.platform.Lighting;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -8,6 +12,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.tastytrash.spatialGUI.SpatialGUI;
 import org.tastytrash.spatialGUI.client.SpatialGUIClient;
@@ -16,6 +21,7 @@ import org.tastytrash.spatialGUI.render.WorldBlurRenderer;
 
 //? if >1.21.1 {
 import net.minecraft.client.renderer.fog.FogRenderer;
+import static com.mojang.blaze3d.platform.Lighting.Entry.LEVEL;
 //?}
 
 //? if <26.1.2 {
@@ -475,7 +481,6 @@ public abstract class GameRendererMixin {
         if (renderer != null && SpatialGUIClient.isEnabled() && renderer.shouldCapture()) {
             SpatialGUIRenderer.skipWindowOverride = false;
             SpatialGUIRenderer.isExtractingScreen = true;
-            InventoryParticlesCompat.updateCursor(MouseHandlerUtil.getLastPos(true), MouseHandlerUtil.getLastPos(false));
             return renderer.createIsolatedGraphics();
         }
         return graphics;
@@ -509,6 +514,14 @@ public abstract class GameRendererMixin {
         }
     }
     ^///?}
+
+    @Inject(method = "render", at = @At("HEAD"))
+    private void spatialGUI$refreshMousePosition(CallbackInfo ci) {
+        var renderer = SpatialGUIClient.renderer();
+        if (renderer != null) {
+            renderer.updateMousePosition();
+        }
+    }
 
     @Inject(method = "render", at = @At("TAIL"))
     private void spatialGUI$renderIsolatedScreen(CallbackInfo ci) {
