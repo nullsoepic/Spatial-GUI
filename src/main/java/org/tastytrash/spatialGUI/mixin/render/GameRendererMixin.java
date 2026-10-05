@@ -298,7 +298,7 @@ public abstract class GameRendererMixin {
         }
     }
 
-    //? if >=26.3 {
+    //? if >=26.2 {
     /*@Inject(method = "extract", at = @At("HEAD"))
     *///?} else {
     @Inject(method = "extractGui", at = @At("HEAD"))
