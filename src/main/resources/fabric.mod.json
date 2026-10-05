@@ -5,7 +5,11 @@
   "name": "Spatial GUI",
   "description": "A client-side mod that renders inventory & container screens as a 3D plane.",
   "authors": [],
-  "contact": {},
+  "contact": {
+    "homepage": "https://github.com/tastytrash/Spatial-GUI",
+    "sources": "https://github.com/tastytrash/Spatial-GUI",
+    "issues": "https://github.com/tastytrash/Spatial-GUI/issues"
+  },
   "license": "MIT",
   "icon": "assets/spatial-gui/icon.png",
   "environment": "client",
