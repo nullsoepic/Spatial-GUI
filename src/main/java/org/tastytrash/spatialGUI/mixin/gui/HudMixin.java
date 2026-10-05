@@ -2,11 +2,9 @@ package org.tastytrash.spatialGUI.mixin.gui;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.tastytrash.spatialGUI.SpatialGUI;
 import org.tastytrash.spatialGUI.client.SpatialGUIClient;
 
 //? if >=26.2 {
@@ -21,11 +19,7 @@ public class HudMixin {
     /*@Inject(method = "renderCrosshair", at = @At("HEAD"), cancellable = true)
      *///?}
     private void spatialGUI$hideCrosshair(CallbackInfo ci) {
-        if (SpatialGUIClient.isEnabled()
-                && SpatialGUIClient.getEffectiveFirstPersonMode()
-                && !SpatialGUI.config.useCrosshairForFirstPerson
-                && SpatialGUIClient.renderer() != null
-                && SpatialGUIClient.renderer().getHookedScreen() != null) {
+        if (SpatialGUIClient.shouldHideCrosshair()) {
             ci.cancel();
         }
     }
@@ -58,10 +52,7 @@ public class HudMixin {
             at = @At("HEAD"), cancellable = true, require = 0)
     *///?}
     private void spatialGUI$hideHotbar(CallbackInfo ci) {
-        if (SpatialGUIClient.isEnabled()
-                && SpatialGUI.config.hideHotbar
-                && SpatialGUIClient.renderer() != null
-                && SpatialGUIClient.renderer().getHookedScreen() != null) {
+        if (SpatialGUIClient.shouldHideHotbar()) {
             ci.cancel();
         }
     }
@@ -69,9 +60,7 @@ public class HudMixin {
     //? if 1.21.11 && neoforge {
     /*@Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void spatialGUI$hideHud(CallbackInfo ci) {
-        if (SpatialGUIClient.isEnabled() && SpatialGUI.config.hideHud
-                && SpatialGUIClient.renderer() != null
-                && SpatialGUIClient.renderer().getHookedScreen() != null) {
+        if (SpatialGUIClient.shouldHideHud()) {
             ci.cancel();
         }
     }
@@ -79,9 +68,7 @@ public class HudMixin {
     //? if neoforge {
     /*@Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
     private void spatialGUI$hideHud(CallbackInfo ci) {
-        if (SpatialGUIClient.isEnabled() && SpatialGUI.config.hideHud
-                && SpatialGUIClient.renderer() != null
-                && SpatialGUIClient.renderer().getHookedScreen() != null) {
+        if (SpatialGUIClient.shouldHideHud()) {
             ci.cancel();
         }
     }
@@ -93,64 +80,34 @@ public class HudMixin {
     target = "Lnet/minecraft/client/Options;hideGui:Z"))
     //?}
     private boolean spatialGUI$hideHud(boolean original) {
-        if (original) return true;
-        return SpatialGUIClient.isEnabled() && SpatialGUI.config.hideHud
-                && SpatialGUIClient.renderer() != null
-                && SpatialGUIClient.renderer().getHookedScreen() != null;
+        return original || SpatialGUIClient.shouldHideHud();
     }
     //?}
     //?} else if >1.21.1 {
     /*@ModifyExpressionValue(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Options;hideGui:Z"))
     private boolean spatialGUI$hideHud(boolean original) {
-        if (original) return true;
-        return SpatialGUIClient.isEnabled() && SpatialGUI.config.hideHud
-                && SpatialGUIClient.renderer() != null
-                && SpatialGUIClient.renderer().getHookedScreen() != null;
+        return original || SpatialGUIClient.shouldHideHud();
     }
     *///?} else {
     /*@Inject(method = {"renderScoreboardSidebar", "renderOverlayMessage", "renderTitle", "renderChat", "renderTabList"},
             at = @At("HEAD"), cancellable = true)
     private void spatialGUI$hideHud(CallbackInfo ci) {
-        if (SpatialGUIClient.isEnabled() && SpatialGUI.config.hideHud
-                && SpatialGUIClient.renderer() != null
-                && SpatialGUIClient.renderer().getHookedScreen() != null) {
+        if (SpatialGUIClient.shouldHideHud()) {
             ci.cancel();
         }
     }
     *///?}
 
     //? if >=26.1.2 {
-    @Inject(method = "extractDebugOverlay", at = @At("HEAD"), cancellable = true)
+    @Inject(method = {"extractDebugOverlay", "extractDeferredSubtitles"}, at = @At("HEAD"), cancellable = true)
     //?} else if >1.21.1 {
-    /*@Inject(method = "renderDebugOverlay", at = @At("HEAD"), cancellable = true)
+    /*@Inject(method = {"renderDebugOverlay", "renderSubtitleOverlay"}, at = @At("HEAD"), cancellable = true)
     *///?}
     //? if >1.21.1 {
-    private void spatialGUI$hideDebugOverlay(CallbackInfo ci) {
-        if (SpatialGUIClient.isEnabled() && SpatialGUI.config.hideHud
-                && SpatialGUIClient.renderer() != null
-                && SpatialGUIClient.renderer().getHookedScreen() != null) {
+    private void spatialGUI$hideHudOverlays(CallbackInfo ci) {
+        if (SpatialGUIClient.shouldHideHud()) {
             ci.cancel();
         }
     }
     //?}
-
-    //? if >=26.1.2 {
-    @Inject(method = "extractDeferredSubtitles", at = @At("HEAD"), cancellable = true)
-    private void spatialGUI$hideDeferredSubtitles(CallbackInfo ci) {
-        if (SpatialGUIClient.isEnabled() && SpatialGUI.config.hideHud
-                && SpatialGUIClient.renderer() != null
-                && SpatialGUIClient.renderer().getHookedScreen() != null) {
-            ci.cancel();
-        }
-    }
-    //?} else if >1.21.1 {
-    /*@Inject(method = "renderSubtitleOverlay", at = @At("HEAD"), cancellable = true)
-    private void spatialGUI$hideDeferredSubtitles(CallbackInfo ci) {
-        if (SpatialGUIClient.isEnabled() && SpatialGUI.config.hideHud
-                && SpatialGUIClient.renderer() != null
-                && SpatialGUIClient.renderer().getHookedScreen() != null) {
-            ci.cancel();
-        }
-    }
-    *///?}
 }
