@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.tastytrash.spatialGUI.SpatialGUI;
 import org.tastytrash.spatialGUI.client.SpatialGUIClient;
+import org.tastytrash.spatialGUI.compat.EssentialCompat;
 import org.tastytrash.spatialGUI.render.SpatialGUIRenderer;
 
 @Mixin(Window.class)
@@ -52,7 +53,8 @@ public class WindowMixin {
 
     @Unique
     private static boolean shouldOverride() {
-        if (!SpatialGUIClient.isEnabled() || SpatialGUIRenderer.skipWindowOverride) return false;
+        if (!SpatialGUIClient.isEnabled()) return false;
+        if (SpatialGUIRenderer.skipWindowOverride && !EssentialCompat.isEssentialCaller()) return false;
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return false;
         if (mc.gui == null) return false;
