@@ -13,9 +13,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.tastytrash.spatialGUI.SpatialGUI;
 import org.tastytrash.spatialGUI.client.SpatialGUIClient;
 
+//? if >1.20.1 && <26.1.2 {
+//import net.minecraft.client.gui.GuiGraphics;
+//import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+//import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+//?}
+
+
 @Mixin(Screen.class)
 public class ScreenMixin {
-    @Inject(method = "added", at = @At("HEAD"))
+    //? if neoforge {
+//    @Inject(method = "added", at = @At("HEAD"))
+    //?} else {
+    @Inject(method = "init()V", at = @At("HEAD"))
+    //?}
     private void spatialGUI$hookOnShow(CallbackInfo ci) {
         Screen screen = (Screen) (Object) this;
         var renderer = SpatialGUIClient.renderer();
@@ -60,11 +71,10 @@ public class ScreenMixin {
         }
     }
 
-    @Inject(method = "renderTransparentBackground", at = @At("HEAD"), cancellable = true)
-    private void spatialGUI$removeTransparentBackground(CallbackInfo ci) {
-        if (SpatialGUIClient.renderer() != null && SpatialGUIClient.renderer().shouldCapture() && SpatialGUIClient.isEnabled()) {
-            ci.cancel();
-        }
+    @WrapOperation(method = "renderTransparentBackground", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fillGradient(IIIIII)V"))
+    private void spatialGUI$removeTransparentBackground(GuiGraphics graphics, int x1, int y1, int x2, int y2, int colorFrom, int colorTo, Operation<Void> original) {
+        if (spatialGUI$isHooked()) return;
+        original.call(graphics, x1, y1, x2, y2, colorFrom, colorTo);
     }
 
     @Inject(method = "renderBlurredBackground", at = @At("HEAD"), cancellable = true)

@@ -2,13 +2,6 @@ __________ FIXES _________________
 ================================
 -------- HIGH PRIORITY ---------------
 
-Still small jump in first person crosshair on <=1.21.1,
-not updating the mouse pos properly like other versions
-
-Sort mixin files into more different packages (when a PR isn't currently open)
-
-Add forge 1.20.1
-
 Test hooking all screens more
 
 When forced into first person mode after having moved your mouse in third person, your camera snaps to that position, doesn't reset
@@ -31,6 +24,8 @@ Minecraft's water effects not applying properly when in the menu with velocity u
 
 __________ SUGGESTIONS/FEATURES _________________
 ================================================
+
+Add forge 1.20.1
 
 #58 Screen closing animation
 
